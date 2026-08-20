@@ -741,7 +741,7 @@ function subtitle(c){
   var p = [];
   if(c.role) p.push(c.role);
   if(c.company) p.push(c.company);
-  return p.join(" · ") || "—";
+  return p.join(" · ");
 }
 function matches(c){
   var k = view(c).k;
