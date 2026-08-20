@@ -157,12 +157,6 @@ section{display:flex; flex-direction:column; gap:12px}
 .btn.wide{flex:1}
 .btn.sm{padding:8px 12px; min-height:38px; font-size:13.5px}
 .btn.danger{background:transparent; border-color:var(--stamp); color:var(--stamp)}
-.update{
-  display:block; width:100%; text-align:left; font:inherit; font-size:14px; line-height:1.4;
-  background:var(--ink); color:var(--paper); border:0; border-radius:var(--r);
-  padding:13px 15px; min-height:44px; box-shadow:var(--shadow);
-}
-.update b{font-weight:700}
 .links{display:flex; flex-direction:column; border:1px solid var(--rule); border-radius:var(--r); overflow:hidden}
 .linkrow{
   display:block; width:100%; text-align:left; font:inherit; font-size:15px;
@@ -298,10 +292,6 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 
 
 <div class="wrap">
-
-  <button class="update" id="update" hidden>
-    <span><b>Nouvelle version disponible.</b> Touche ici pour la charger.</span>
-  </button>
 
   <div class="warn" id="warn" hidden></div>
 
@@ -488,6 +478,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
       <input type="file" id="s-file" accept=".json,application/json" hidden>
     </div>
     <hr class="rule">
+    <p class="hint" id="s-version" style="text-align:right;opacity:.6"></p>
     <p class="hint">Tes données restent sur ce téléphone, dans ce navigateur — rien n'est envoyé nulle part. Si tu changes de téléphone ou effaces les données du navigateur, tu les perds : télécharge une copie de temps en temps.</p>
   </form>
 </dialog>
@@ -497,7 +488,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2321";
+var APP_VERSION = "20260820-2347";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{}, goal:30, contacts:[], deleted:[], sync:{token:"",gistId:""}, updatedAt:0 };
@@ -1011,6 +1002,7 @@ function newContact(d){
 var dlgS = $("#dlg-settings");
 $("#btn-settings").addEventListener("click", function(){
   $("#s-goal").value = state.goal;
+  $("#s-version").textContent = "version " + APP_VERSION;
   $("#y-token").value = (state.sync && state.sync.token) || "";
   $("#y-gist").value = (state.sync && state.sync.gistId) || "";
   etatSync();
@@ -1321,23 +1313,6 @@ function planifierSync(){
   syncT = setTimeout(synchroniser, 3000);      // on laisse Ali finir sa saisie
 }
 
-/* ============ mise à jour de l'app ============ */
-var lastCheck = 0;
-function checkUpdate(){
-  var now = Date.now();
-  if(now - lastCheck < 60000) return;      // au plus une fois par minute
-  lastCheck = now;
-  fetch("version.json?t="+now, {cache:"no-store"})
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(j){
-      if(j && j.v && j.v !== APP_VERSION) $("#update").hidden = false;
-    })
-    .catch(function(){});                   // hors ligne : on ne dit rien
-}
-$("#update").addEventListener("click", function(){
-  location.replace(location.pathname + "?v=" + Date.now());   // contourne le cache
-});
-
 /* ============ persistance ============ */
 var saveState = "";
 var lsOk = (function(){ try{ localStorage.setItem("__o30","1"); localStorage.removeItem("__o30"); return true; }catch(e){ return false; } })();
@@ -1454,10 +1429,9 @@ window.addEventListener("resize", fitDock);
 if(window.ResizeObserver) new ResizeObserver(fitDock).observe(document.querySelector(".dock"));
 
 load();
-checkUpdate();
 synchroniser();                            // au démarrage : ce que l'autre appareil a laissé
 document.addEventListener("visibilitychange", function(){
-  if(document.visibilityState==="visible"){ checkUpdate(); synchroniser(); }   // à chaque retour dans l'app
+  if(document.visibilityState==="visible"){ synchroniser(); }   // à chaque retour dans l'app
 });
 })();
 </script>
