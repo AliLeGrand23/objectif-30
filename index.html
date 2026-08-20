@@ -497,7 +497,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2315";
+var APP_VERSION = "20260820-2317";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{}, goal:30, contacts:[], deleted:[], sync:{token:"",gistId:""}, updatedAt:0 };
@@ -1036,7 +1036,7 @@ $("#y-connect").addEventListener("click", function(){
         body: JSON.stringify({
           description:"Objectif 30 — mes contacts (privé)",
           "public": false,
-          files: (function(){ var f={}; f[FICHIER] = {content: JSON.stringify(state)}; return f; })()
+          files: (function(){ var f={}; f[FICHIER] = {content: JSON.stringify(sansSecrets(state))}; return f; })()
         })
       }).then(function(r){
         if(r.status===401 || r.status===403) throw {code:"jeton"};
@@ -1272,9 +1272,14 @@ function lireGist(){
       try{ return normalize(JSON.parse(f.content)); }catch(e){ return null; }
     });
 }
+function sansSecrets(etat){
+  var copie = JSON.parse(JSON.stringify(etat));
+  delete copie.sync;                        // le jeton reste sur l'appareil, jamais dans le carnet
+  return copie;
+}
 function ecrireGist(etat){
   var corps = {files:{}};
-  corps.files[FICHIER] = {content: JSON.stringify(etat)};
+  corps.files[FICHIER] = {content: JSON.stringify(sansSecrets(etat))};
   return fetch(API+"/gists/"+state.sync.gistId, {
     method:"PATCH", headers:enTetes(), body:JSON.stringify(corps)
   }).then(function(r){
@@ -1397,6 +1402,7 @@ function mergeState(a, b){
     v: 1,
     me: recent.me,
     goal: recent.goal,
+    sync: (a && a.sync) || (b && b.sync) || {token:"",gistId:""},   // jamais fusionnée : locale
     updatedAt: Math.max(a.updatedAt||0, b.updatedAt||0),
     contacts: [],
     deleted: []
