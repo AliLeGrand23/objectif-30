@@ -989,6 +989,16 @@ function buildBrief(c, channel, moment){
   return L.join("\n");
 }
 
+/* WhatsApp attend un numéro international sans "+" : 06 12 34 56 78 -> 33612345678 */
+function waNumber(raw){
+  var n = String(raw||"").replace(/[^0-9+]/g,"");
+  if(n.indexOf("+")===0) return n.slice(1).replace(/[^0-9]/g,"");
+  n = n.replace(/[^0-9]/g,"");
+  if(n.indexOf("00")===0) return n.slice(2);
+  if(n.length===10 && n.charAt(0)==="0") return "33"+n.slice(1);   // numéro français saisi localement
+  return n;
+}
+
 /* ============ fiche contact ============ */
 var dlgC = $("#dlg-contact");
 var chan = "li", moment = "first", dirty = false;
@@ -1135,7 +1145,7 @@ $("#c-copy").addEventListener("click", function(){
 $("#c-open").addEventListener("click", function(){
   var c = byId(current); if(!c) return;
   if(chan==="wa"){
-    var num = (c.phone||"").replace(/[^0-9]/g,"");
+    var num = waNumber(c.phone);
     if(!num){ toast("Pas de numéro sur cette fiche — ajoute-le dans « Modifier la fiche »."); return; }
     window.open("https://wa.me/"+num, "_blank", "noopener");
     return;
