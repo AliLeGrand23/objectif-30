@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Objectif 30</title>
+<meta name="description" content="Suivi gamifié de recherche de CDI — 30 contacts, un streak, des messages prêts à copier.">
+<meta name="theme-color" content="#16233A">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Objectif 30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+:root{
+  --paper:#ECEDEF; --card:#F8F8F6; --card-2:#E4E6EA;
+  --ink:#16233A; --ink-soft:#5C6779; --ink-faint:#8B94A3;
+  --rule:#D2D7DE; --rule-strong:#B9C0CA;
+  --stamp:#C9331D; --stamp-soft:#F0D7D2;
+  --go:#1C6B4B; --go-soft:#D7E7DF;
+  --focus:#16233A;
+  --shadow:0 1px 0 rgba(22,35,58,.06), 0 6px 18px -12px rgba(22,35,58,.35);
+  --r:10px;
+  --f-display:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,sans-serif;
+  --f-data:"Courier Prime",ui-monospace,"SF Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A24; --card:#1C2432; --card-2:#232C3C;
+    --ink:#E8EBF1; --ink-soft:#9AA5B6; --ink-faint:#6C7787;
+    --rule:#2B3547; --rule-strong:#3B475C;
+    --stamp:#F26A50; --stamp-soft:#3A2018;
+    --go:#61C295; --go-soft:#16332A;
+    --focus:#E8EBF1;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 8px 20px -14px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A24; --card:#1C2432; --card-2:#232C3C;
+  --ink:#E8EBF1; --ink-soft:#9AA5B6; --ink-faint:#6C7787;
+  --rule:#2B3547; --rule-strong:#3B475C;
+  --stamp:#F26A50; --stamp-soft:#3A2018;
+  --go:#61C295; --go-soft:#16332A;
+  --focus:#E8EBF1;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 8px 20px -14px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:560px; margin:0 auto; padding:20px 16px 104px; display:flex; flex-direction:column; gap:26px}
+h1,h2,h3{margin:0; font-family:var(--f-display); text-wrap:balance; letter-spacing:-.015em}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px; border-radius:4px}
+.lbl{font-family:var(--f-data); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- en-tête ---------- */
+.masthead{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+.masthead h1{font-size:30px; font-weight:800; line-height:1.05}
+.masthead p{margin:4px 0 0; font-size:13.5px; color:var(--ink-soft); max-width:34ch}
+.iconbtn{
+  width:40px; height:40px; flex:none; display:grid; place-items:center;
+  background:transparent; border:1px solid var(--rule); border-radius:999px; color:var(--ink-soft);
+}
+.iconbtn:hover{border-color:var(--rule-strong); color:var(--ink)}
+
+/* ---------- bandeau chiffres ---------- */
+.meter{
+  background:var(--card); border:1px solid var(--rule); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:16px; display:flex; flex-direction:column; gap:16px;
+}
+.meter-top{display:flex; align-items:center; gap:14px}
+.cachet{
+  flex:none; width:96px; height:96px; border-radius:999px; display:grid; place-content:center; text-align:center;
+  color:var(--stamp); border:2.5px solid var(--stamp); box-shadow:0 0 0 3px var(--paper) inset, 0 0 0 4.5px var(--stamp) inset;
+  transform:rotate(-7deg); opacity:.92;
+}
+.cachet.cold{color:var(--ink-faint); border-color:var(--ink-faint); box-shadow:0 0 0 3px var(--paper) inset, 0 0 0 4.5px var(--ink-faint) inset}
+.cachet b{display:block; font-family:var(--f-display); font-size:34px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums}
+.cachet span{display:block; font-family:var(--f-data); font-size:9.5px; letter-spacing:.12em; margin-top:3px}
+.meter-stats{flex:1; min-width:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px 10px}
+.stat{min-width:0}
+.stat .lbl{display:block; overflow-wrap:anywhere}
+@media (max-width:340px){
+  .meter-top{flex-direction:column; align-items:flex-start; gap:12px}
+  .meter-stats{width:100%}
+  .cachet{align-self:center}
+}
+.stat b{display:block; font-family:var(--f-display); font-size:26px; font-weight:700; line-height:1.1; font-variant-numeric:tabular-nums}
+.stat.hot b{color:var(--stamp)}
+.stat.good b{color:var(--go)}
+
+/* ---------- planche de timbres ---------- */
+.sheet{display:grid; grid-template-columns:repeat(10,1fr); gap:5px}
+@media (max-width:420px){.sheet{grid-template-columns:repeat(6,1fr); gap:6px}}
+.tile{
+  aspect-ratio:1; border-radius:3px; border:1.5px dashed var(--rule-strong); background:transparent;
+}
+.tile.sent{border-style:solid; border-color:var(--ink); background:var(--ink)}
+.tile.followed{border-style:solid; border-color:var(--stamp); background:var(--stamp)}
+.tile.replied,.tile.call{border-style:solid; border-color:var(--go); background:var(--go)}
+.tile.covered{border-style:solid; border-color:var(--rule-strong); background:var(--rule)}
+.reality{
+  font-size:13.5px; color:var(--ink-soft); border-top:1px solid var(--rule); padding-top:13px; margin:0;
+}
+.reality b{color:var(--ink); font-weight:600}
+
+/* ---------- badges ---------- */
+.badges{display:flex; gap:7px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+.badges::-webkit-scrollbar{display:none}
+.badge{
+  display:inline-flex; align-items:center; gap:6px; padding:5px 10px 5px 8px;
+  border:1px solid var(--rule); border-radius:999px; background:var(--card); flex:none; white-space:nowrap;
+  font-size:12px; color:var(--ink-faint); opacity:.5;
+}
+.badge .em{font-size:13px; filter:grayscale(1)}
+.badge.on{opacity:1; color:var(--ink); border-color:var(--rule-strong)}
+.badge.on .em{filter:none}
+
+/* ---------- sections ---------- */
+section{display:flex; flex-direction:column; gap:12px}
+.sec-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
+.sec-head h2{font-size:19px; font-weight:700}
+.sec-head .lbl{white-space:nowrap}
+
+/* ---------- mission du jour ---------- */
+.mission{display:flex; flex-direction:column; gap:10px}
+.env{
+  position:relative; background:var(--card); border:1px solid var(--rule); border-left:4px solid var(--ink);
+  border-radius:var(--r); box-shadow:var(--shadow); padding:14px 14px 12px; display:flex; flex-direction:column; gap:11px;
+}
+.env.due{border-left-color:var(--stamp)}
+.env .who{font-family:var(--f-display); font-size:18px; font-weight:700; line-height:1.2}
+.env .meta{font-size:13px; color:var(--ink-soft); margin-top:2px}
+.env .why{font-family:var(--f-data); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.env .why.due{color:var(--stamp)}
+.row-actions{display:flex; gap:8px}
+.btn{
+  border:1px solid var(--ink); background:var(--ink); color:var(--paper);
+  border-radius:8px; padding:11px 14px; font-size:14.5px; font-weight:600; min-height:44px;
+}
+.btn:hover{opacity:.9}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--rule-strong); font-weight:500}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.wide{flex:1}
+.btn.sm{padding:8px 12px; min-height:38px; font-size:13.5px}
+.btn.danger{background:transparent; border-color:var(--stamp); color:var(--stamp)}
+.empty{
+  border:1.5px dashed var(--rule-strong); border-radius:var(--r); padding:22px 16px; text-align:center;
+  color:var(--ink-soft); font-size:14px;
+}
+.empty b{display:block; font-family:var(--f-display); font-size:17px; color:var(--ink); margin-bottom:4px}
+
+/* ---------- filtres + liste ---------- */
+.chips{display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  white-space:nowrap; border:1px solid var(--rule); background:transparent; color:var(--ink-soft);
+  border-radius:999px; padding:7px 12px; font-size:13px; min-height:36px;
+}
+.chip[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--paper)}
+.list{display:flex; flex-direction:column; border:1px solid var(--rule); border-radius:var(--r); background:var(--card); overflow:hidden}
+.item{display:flex; align-items:stretch; border-bottom:1px solid var(--rule)}
+.item:last-child{border-bottom:0}
+.item-main{flex:1; text-align:left; background:transparent; border:0; padding:12px 8px 12px 13px; display:flex; flex-direction:column; gap:3px; min-width:0}
+.item-main:hover{background:var(--card-2)}
+.item-name{font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.item-sub{font-size:12.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pill{
+  align-self:flex-start; margin-top:2px; font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; padding:2px 7px; border-radius:999px; border:1px solid var(--rule-strong); color:var(--ink-faint);
+}
+.pill.sent{border-color:var(--rule-strong); color:var(--ink-soft)}
+.pill.due{border-color:var(--stamp); color:var(--stamp); background:var(--stamp-soft)}
+.pill.followed{border-color:var(--stamp); color:var(--stamp)}
+.pill.replied,.pill.call{border-color:var(--go); color:var(--go); background:var(--go-soft)}
+.item-next{
+  flex:none; width:52px; border:0; border-left:1px solid var(--rule); background:transparent;
+  color:var(--ink-faint); font-size:19px; display:grid; place-items:center;
+}
+.item-next:hover{background:var(--card-2); color:var(--ink)}
+.item-next[disabled]{opacity:.25; cursor:default}
+
+/* ---------- barre du bas ---------- */
+.dock{
+  position:fixed; left:0; right:0; bottom:0; z-index:5;
+  background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter:blur(10px);
+  border-top:1px solid var(--rule); padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+}
+.dock-in{max-width:560px; margin:0 auto; display:flex; flex-direction:column; gap:6px}
+.dock-row{display:flex; gap:8px}
+.dock-row .btn{flex:1}
+.warn{
+  background:var(--stamp-soft); border:1px solid var(--stamp); color:var(--stamp);
+  border-radius:var(--r); padding:11px 13px; font-size:13.5px; line-height:1.4;
+}
+.warn b{font-weight:600}
+.savechip{align-self:flex-end; min-height:12px; font-family:var(--f-data); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); white-space:nowrap}
+
+/* ---------- dialogues ---------- */
+dialog{
+  border:0; padding:0; background:transparent; color:var(--ink); width:min(560px,100%); max-width:100%;
+  max-height:100%; margin:auto auto 0;
+}
+dialog::backdrop{background:rgba(10,14,22,.55)}
+.sheet-box{
+  background:var(--card); border:1px solid var(--rule); border-radius:16px 16px 0 0;
+  padding:18px 16px calc(20px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:14px;
+  max-height:92vh; overflow-y:auto;
+}
+@media (min-width:600px){
+  dialog{margin:auto}
+  .sheet-box{border-radius:14px}
+}
+.dlg-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+.dlg-head h3{font-size:21px; font-weight:700; line-height:1.15}
+.dlg-head .meta{font-size:13.5px; color:var(--ink-soft); margin-top:3px}
+label.field{display:flex; flex-direction:column; gap:5px}
+label.field > span{font-family:var(--f-data); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint)}
+input[type=text],input[type=email],input[type=url],textarea,select{
+  font:inherit; font-size:15px; color:var(--ink); background:var(--paper);
+  border:1px solid var(--rule-strong); border-radius:8px; padding:10px 11px; width:100%; min-height:44px;
+}
+textarea{min-height:74px; resize:vertical; line-height:1.45}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.steps{display:flex; gap:5px; overflow-x:auto; scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{
+  flex:1; min-width:72px; border:1px solid var(--rule-strong); background:transparent; color:var(--ink-soft);
+  border-radius:8px; padding:9px 6px; font-size:12.5px; min-height:44px; white-space:nowrap;
+}
+.step[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--paper); font-weight:600}
+.msgbox{
+  font-family:var(--f-data); font-size:13.5px; line-height:1.55; white-space:pre-wrap;
+  background:var(--paper); border:1px solid var(--rule-strong); border-radius:8px; padding:12px; max-height:230px; overflow-y:auto;
+}
+.count{font-family:var(--f-data); font-size:11px; color:var(--ink-faint); text-align:right}
+.count.over{color:var(--stamp)}
+.hint{font-size:12.5px; color:var(--ink-soft); margin:0}
+.dlg-foot{display:flex; gap:8px; flex-wrap:wrap}
+hr.rule{border:0; border-top:1px solid var(--rule); margin:2px 0}
+table.preview{width:100%; border-collapse:collapse; font-size:12.5px}
+table.preview th,table.preview td{text-align:left; padding:5px 7px; border-bottom:1px solid var(--rule); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px}
+table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.scrollx{overflow-x:auto}
+
+/* ---------- toast ---------- */
+#toast{
+  position:fixed; left:50%; bottom:84px; transform:translate(-50%,14px); z-index:20;
+  background:var(--ink); color:var(--paper); padding:11px 16px; border-radius:999px;
+  font-size:13.5px; font-weight:500; box-shadow:var(--shadow); opacity:0; pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease; max-width:90vw; text-align:center;
+}
+#toast.on{opacity:1; transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <div class="warn" id="warn" hidden></div>
+
+  <header class="masthead">
+    <div>
+      <h1>Objectif 30</h1>
+      <p>Trente personnes à contacter. Le score compte les envois, jamais les réponses.</p>
+    </div>
+    <button class="iconbtn" id="btn-settings" title="Réglages" aria-label="Réglages">⚙</button>
+  </header>
+
+  <div class="meter">
+    <div class="meter-top">
+      <div class="cachet cold" id="cachet">
+        <b class="num" id="streak-n">0</b>
+        <span id="streak-l">JOUR</span>
+      </div>
+      <div class="meter-stats">
+        <div class="stat"><span class="lbl">Contactés</span><b class="num" id="st-sent">0<span style="font-size:15px;color:var(--ink-faint)">/30</span></b></div>
+        <div class="stat hot"><span class="lbl">Tentatives</span><b class="num" id="st-tries">0</b></div>
+        <div class="stat good"><span class="lbl">Réponses</span><b class="num" id="st-replies">0</b></div>
+        <div class="stat"><span class="lbl">Calls</span><b class="num" id="st-calls">0</b></div>
+      </div>
+    </div>
+    <div class="sheet" id="sheet" aria-hidden="true"></div>
+    <p class="reality" id="reality"></p>
+  </div>
+
+  <div class="badges" id="badges"></div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Aujourd'hui</h2>
+      <span class="lbl" id="today-date"></span>
+    </div>
+    <div class="mission" id="mission"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>La planche</h2>
+      <span class="lbl" id="list-count"></span>
+    </div>
+    <div class="chips" id="filters">
+      <button class="chip" data-f="all" aria-pressed="true">Tout</button>
+      <button class="chip" data-f="todo" aria-pressed="false">À contacter</button>
+      <button class="chip" data-f="waiting" aria-pressed="false">En attente</button>
+      <button class="chip" data-f="replied" aria-pressed="false">Réponses</button>
+      <button class="chip" data-f="covered" aria-pressed="false">Terrain couvert</button>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+</div>
+
+<div class="dock">
+  <div class="dock-in">
+    <span class="savechip" id="savechip"></span>
+    <div class="dock-row">
+      <button class="btn" id="btn-add">+ Ajouter</button>
+      <button class="btn ghost" id="btn-import">Importer CSV</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- fiche contact -->
+<dialog id="dlg-contact">
+  <div class="sheet-box">
+    <div class="dlg-head">
+      <div>
+        <h3 id="c-name">—</h3>
+        <div class="meta" id="c-meta"></div>
+      </div>
+      <button class="iconbtn" data-close aria-label="Fermer">✕</button>
+    </div>
+
+    <div>
+      <span class="lbl" style="display:block;margin-bottom:6px">Où on en est</span>
+      <div class="steps" id="c-steps">
+        <button class="step" data-s="todo">À contacter</button>
+        <button class="step" data-s="sent">Envoyé</button>
+        <button class="step" data-s="followed">Relancé</button>
+        <button class="step" data-s="replied">Réponse</button>
+        <button class="step" data-s="call">Call / RDV</button>
+      </div>
+    </div>
+
+    <label class="field">
+      <span>Accroche</span>
+      <textarea id="c-hook" placeholder="j'ai vu votre passage de l'audit au produit, c'est exactement le virage qui m'intéresse"></textarea>
+    </label>
+    <p class="hint">La phrase qui prouve que le message n'est pas un copier-coller.</p>
+
+    <hr class="rule">
+
+    <div>
+      <span class="lbl" style="display:block;margin-bottom:6px">Message</span>
+      <div class="steps" id="c-tpl" style="margin-bottom:10px">
+        <button class="step" data-t="li" aria-pressed="true">LinkedIn</button>
+        <button class="step" data-t="mail">Mail</button>
+        <button class="step" data-t="relance">Relance</button>
+      </div>
+      <div class="msgbox" id="c-msg"></div>
+      <div class="count" id="c-count"></div>
+    </div>
+
+    <div class="dlg-foot">
+      <button class="btn wide" id="c-copy">Copier le message</button>
+      <button class="btn ghost" id="c-open">Ouvrir</button>
+    </div>
+    <p class="hint">Copier marque la personne comme contactée et lance le rappel de relance à J+7.</p>
+
+    <hr class="rule">
+
+    <label class="field">
+      <span>Note</span>
+      <textarea id="c-note" placeholder="ce qu'il faut se rappeler après l'échange"></textarea>
+    </label>
+    <div class="dlg-foot">
+      <button class="btn ghost sm" id="c-edit">Modifier la fiche</button>
+      <button class="btn ghost sm danger" id="c-del">Supprimer</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ajout / édition -->
+<dialog id="dlg-edit">
+  <form method="dialog" class="sheet-box" id="form-edit">
+    <div class="dlg-head">
+      <h3 id="e-title">Nouvelle personne</h3>
+      <button class="iconbtn" type="button" data-close aria-label="Fermer">✕</button>
+    </div>
+    <div class="grid2">
+      <label class="field"><span>Prénom</span><input type="text" id="e-first" required></label>
+      <label class="field"><span>Nom</span><input type="text" id="e-last"></label>
+    </div>
+    <label class="field"><span>Entreprise</span><input type="text" id="e-company"></label>
+    <label class="field"><span>Poste</span><input type="text" id="e-role"></label>
+    <label class="field"><span>Profil LinkedIn</span><input type="url" id="e-linkedin" placeholder="https://www.linkedin.com/in/…"></label>
+    <label class="field"><span>Email</span><input type="email" id="e-email"></label>
+    <div class="dlg-foot">
+      <button class="btn wide" type="submit" id="e-save">Ajouter</button>
+      <button class="btn ghost" type="button" data-close>Annuler</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- import CSV -->
+<dialog id="dlg-import">
+  <div class="sheet-box">
+    <div class="dlg-head">
+      <div>
+        <h3>Importer depuis Notion</h3>
+        <div class="meta">Exporte ta base en CSV, dépose le fichier ici. Rien ne quitte ton téléphone.</div>
+      </div>
+      <button class="iconbtn" data-close aria-label="Fermer">✕</button>
+    </div>
+    <input type="file" id="i-file" accept=".csv,text/csv" style="padding:10px">
+    <div id="i-map" hidden>
+      <p class="hint" id="i-found"></p>
+      <div class="grid2" id="i-selects"></div>
+      <div class="scrollx" style="margin-top:12px"><table class="preview" id="i-preview"></table></div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn wide" id="i-go" disabled>Importer</button>
+      <button class="btn ghost" data-close>Annuler</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- réglages -->
+<dialog id="dlg-settings">
+  <form method="dialog" class="sheet-box" id="form-settings">
+    <div class="dlg-head">
+      <div>
+        <h3>Toi</h3>
+        <div class="meta">Sert à remplir les messages automatiquement.</div>
+      </div>
+      <button class="iconbtn" type="button" data-close aria-label="Fermer">✕</button>
+    </div>
+    <label class="field"><span>Ton prénom et nom</span><input type="text" id="s-name" placeholder="Ali El Belghiti"></label>
+    <label class="field"><span>Qui tu es, en une ligne</span><input type="text" id="s-pitch" placeholder="jeune diplômé, je cherche un premier CDI en gestion de projet"></label>
+    <label class="field"><span>Ce que tu demandes</span><input type="text" id="s-ask" placeholder="15 minutes pour comprendre votre métier"></label>
+    <label class="field"><span>Objectif</span><input type="text" id="s-goal" inputmode="numeric" placeholder="30"></label>
+    <div class="dlg-foot">
+      <button class="btn wide" type="submit">Enregistrer</button>
+      <button class="btn ghost" type="button" data-close>Annuler</button>
+    </div>
+    <hr class="rule">
+    <div>
+      <span class="lbl" style="display:block;margin-bottom:6px">Sauvegarde</span>
+      <div class="dlg-foot">
+        <button class="btn ghost sm" type="button" id="s-export">Télécharger une copie</button>
+        <button class="btn ghost sm" type="button" id="s-restore">Restaurer un fichier</button>
+      </div>
+      <input type="file" id="s-file" accept=".json,application/json" hidden>
+    </div>
+    <hr class="rule">
+    <p class="hint">Tes données restent sur ce téléphone, dans ce navigateur — rien n'est envoyé nulle part. Si tu changes de téléphone ou effaces les données du navigateur, tu les perds : télécharge une copie de temps en temps.</p>
+  </form>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ état ============ */
+var KEY = "objectif30.v1";
+var DAY = 86400000;
+var state = { v:1, me:{name:"",pitch:"",ask:""}, goal:30, contacts:[], updatedAt:0 };
+var filter = "all";
+var current = null;      // id de la fiche ouverte
+var tpl = "li";
+var editing = null;      // id en cours d'édition, ou null pour un ajout
+var pending = null;      // import en attente
+
+var $ = function(s){ return document.querySelector(s); };
+var el = function(t,c,x){ var n=document.createElement(t); if(c)n.className=c; if(x!=null)n.textContent=x; return n; };
+
+/* ============ dates ============ */
+function todayKey(d){ d = d||new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dayKeyOf(ts){ return todayKey(new Date(ts)); }
+function daysSince(ts){
+  if(!ts) return null;
+  var a = new Date(ts); a.setHours(0,0,0,0);
+  var b = new Date(); b.setHours(0,0,0,0);
+  return Math.round((b-a)/DAY);
+}
+function humanAge(ts){
+  var d = daysSince(ts);
+  if(d===null) return "";
+  if(d<=0) return "aujourd'hui";
+  if(d===1) return "hier";
+  return "il y a "+d+" jours";
+}
+function shortDate(ts){
+  if(!ts) return "";
+  return new Date(ts).toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+}
+
+/* ============ lecture du statut ============ */
+function view(c){
+  if(c.status==="call")    return {k:"call",    label:"Call / RDV"};
+  if(c.status==="replied") return {k:"replied", label:"Réponse"};
+  if(c.closed)             return {k:"covered", label:"Terrain couvert"};
+  if(c.status==="followed"){
+    if(daysSince(c.followedAt) >= 14) return {k:"covered", label:"Terrain couvert"};
+    return {k:"followed", label:"Relancé"};
+  }
+  if(c.status==="sent"){
+    var d = daysSince(c.sentAt);
+    if(d >= 21) return {k:"covered", label:"Terrain couvert"};
+    if(d >= 7)  return {k:"due",     label:"Relance due"};
+    return {k:"sent", label:"En attente"};
+  }
+  return {k:"todo", label:"À contacter"};
+}
+function reached(c){ return c.status!=="todo"; }
+function actionDays(){
+  var set = {};
+  state.contacts.forEach(function(c){
+    if(c.sentAt)     set[dayKeyOf(c.sentAt)] = 1;
+    if(c.followedAt) set[dayKeyOf(c.followedAt)] = 1;
+  });
+  return set;
+}
+function streakInfo(){
+  var days = actionDays();
+  var today = todayKey();
+  var d = new Date(); d.setHours(0,0,0,0);
+  var live = !!days[today];
+  if(!live){ d = new Date(d.getTime()-DAY); if(!days[todayKey(d)]) return {n:0, live:false}; }
+  var n = 0;
+  while(days[todayKey(d)]){ n++; d = new Date(d.getTime()-DAY); }
+  return {n:n, live:live};
+}
+function bestStreak(){
+  var keys = Object.keys(actionDays()).sort();
+  var best=0, run=0, prev=null;
+  keys.forEach(function(k){
+    var t = new Date(k+"T12:00:00").getTime();
+    run = (prev!==null && Math.round((t-prev)/DAY)===1) ? run+1 : 1;
+    if(run>best) best=run;
+    prev = t;
+  });
+  return best;
+}
+function stats(){
+  var s = {sent:0, tries:0, replies:0, calls:0, covered:0, follows:0, today:0};
+  var tk = todayKey();
+  state.contacts.forEach(function(c){
+    if(reached(c)) s.sent++;
+    if(c.sentAt){ s.tries++; if(dayKeyOf(c.sentAt)===tk) s.today++; }
+    if(c.followedAt){ s.tries++; s.follows++; if(dayKeyOf(c.followedAt)===tk) s.today++; }
+    if(c.repliedAt) s.replies++;
+    if(c.callAt) s.calls++;
+    if(view(c).k==="covered") s.covered++;
+  });
+  return s;
+}
+
+/* ============ rendu : compteurs ============ */
+function renderMeter(){
+  var s = stats(), st = streakInfo();
+  $("#streak-n").textContent = st.n;
+  $("#streak-l").textContent = st.n===0 ? "À ZÉRO" : (st.live ? (st.n>1?"JOURS":"JOUR") : "À SAUVER");
+  $("#cachet").className = "cachet" + (st.live && st.n>0 ? "" : " cold");
+  $("#st-sent").innerHTML = s.sent + '<span style="font-size:15px;color:var(--ink-faint)">/'+state.goal+'</span>';
+  $("#st-tries").textContent = s.tries;
+  $("#st-replies").textContent = s.replies;
+  $("#st-calls").textContent = s.calls;
+
+  var sheet = $("#sheet"); sheet.innerHTML = "";
+  var cs = state.contacts.slice().sort(function(a,b){ return (a.sentAt||9e15)-(b.sentAt||9e15); });
+  var n = Math.max(state.goal, cs.length);
+  for(var i=0;i<n;i++){
+    var t = el("div","tile");
+    if(cs[i]) t.classList.add(view(cs[i]).k==="due" ? "sent" : view(cs[i]).k);
+    sheet.appendChild(t);
+  }
+
+  var r = $("#reality");
+  if(s.tries===0){
+    r.innerHTML = "Rien d'envoyé pour l'instant. Le premier message est le plus cher — après, c'est de la mécanique.";
+  } else if(s.sent<5){
+    r.innerHTML = "<b>"+s.sent+" personne"+(s.sent>1?"s":"")+" contactée"+(s.sent>1?"s":"")+".</b> Trop tôt pour juger quoi que ce soit : le rythme normal en contact à froid, c'est <b>1 réponse pour 4 ou 5 messages</b>.";
+  } else if(s.replies===0){
+    r.innerHTML = "<b>"+s.sent+" contactés, 0 réponse.</b> Il en faut souvent 8 à 10 avant la première. Ce chiffre parle du volume envoyé, pas de toi.";
+  } else {
+    var ratio = Math.round(s.sent/s.replies*10)/10;
+    var norm = s.replies/s.sent >= 0.2 ? "au-dessus du rythme normal" : "dans la norme";
+    r.innerHTML = "<b>"+s.sent+" contactés, "+s.replies+" réponse"+(s.replies>1?"s":"")+"</b> — 1 sur "+String(ratio).replace(".",",")+". Tu es "+norm+" (1 pour 4 ou 5).";
+  }
+  if(s.today>0){
+    r.innerHTML += " <b>"+s.today+" envoi"+(s.today>1?"s":"")+" aujourd'hui</b> — la série tient.";
+  }
+}
+
+var BADGES = [
+  {e:"📮", t:"Premier envoi",     f:function(s){ return s.tries>=1; }},
+  {e:"🖐", t:"5 contactés",       f:function(s){ return s.sent>=5; }},
+  {e:"🔟", t:"10 contactés",      f:function(s){ return s.sent>=10; }},
+  {e:"📬", t:"20 contactés",      f:function(s){ return s.sent>=20; }},
+  {e:"🏁", t:"Objectif atteint",  f:function(s){ return s.sent>=state.goal; }},
+  {e:"🔥", t:"7 jours d'affilée", f:function(s){ return bestStreak()>=7; }},
+  {e:"↩️", t:"3 relances",        f:function(s){ return s.follows>=3; }},
+  {e:"🛡", t:"10 silences encaissés", f:function(s){ return s.covered>=10; }},
+  {e:"💬", t:"Première réponse",  f:function(s){ return s.replies>=1; }},
+  {e:"☎️", t:"Premier call",      f:function(s){ return s.calls>=1; }}
+];
+function renderBadges(){
+  var s = stats(), box = $("#badges"); box.innerHTML = "";
+  var sorted = BADGES.slice().sort(function(a,b){ return (b.f(s)?1:0) - (a.f(s)?1:0); });
+  sorted.forEach(function(b){
+    var n = el("span","badge"+(b.f(s)?" on":""));
+    n.appendChild(el("span","em",b.e));
+    n.appendChild(el("span",null,b.t));
+    box.appendChild(n);
+  });
+}
+
+/* ============ rendu : mission du jour ============ */
+function seededOrder(list){
+  var seed = 0, k = todayKey();
+  for(var i=0;i<k.length;i++) seed = (seed*31 + k.charCodeAt(i)) % 100000;
+  return list.map(function(c,i){ return {c:c, r:(seed*(i+7)*9301+49297)%233280}; })
+             .sort(function(a,b){ return a.r-b.r; })
+             .map(function(o){ return o.c; });
+}
+function renderMission(){
+  var box = $("#mission"); box.innerHTML = "";
+  $("#today-date").textContent = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+
+  var due = state.contacts.filter(function(c){ return view(c).k==="due"; })
+                          .sort(function(a,b){ return a.sentAt-b.sentAt; });
+  var todo = seededOrder(state.contacts.filter(function(c){ return view(c).k==="todo"; }));
+  var picks = due.concat(todo).slice(0,3);
+
+  if(!state.contacts.length){
+    var e0 = el("div","empty");
+    e0.appendChild(el("b",null,"La planche est vide"));
+    e0.appendChild(el("div",null,"Ajoute une première personne, ou importe ton export Notion."));
+    box.appendChild(e0); return;
+  }
+  if(!picks.length){
+    var s = stats();
+    var e1 = el("div","empty");
+    e1.appendChild(el("b",null, s.today>0 ? "Journée faite." : "Rien à envoyer aujourd'hui."));
+    e1.appendChild(el("div",null, s.today>0
+      ? "Tu as envoyé "+s.today+" message"+(s.today>1?"s":"")+" aujourd'hui. Les relances reviendront toutes seules."
+      : "Tout le monde est traité ou en attente. Ajoute des noms pour relancer la machine."));
+    box.appendChild(e1); return;
+  }
+
+  picks.forEach(function(c){
+    var v = view(c);
+    var card = el("div","env"+(v.k==="due"?" due":""));
+    var why = el("div","why"+(v.k==="due"?" due":""), v.k==="due"
+      ? "Relance due — envoyé "+humanAge(c.sentAt)
+      : "Premier message");
+    var head = el("div");
+    head.appendChild(el("div","who", fullName(c)));
+    head.appendChild(el("div","meta", subtitle(c)));
+    var acts = el("div","row-actions");
+    var b1 = el("button","btn wide","Écrire");
+    b1.onclick = function(){ openContact(c.id, v.k==="due" ? "relance" : "li"); };
+    var b2 = el("button","btn ghost","Déjà fait");
+    b2.onclick = function(){ advance(c.id); };
+    acts.appendChild(b1); acts.appendChild(b2);
+    card.appendChild(why); card.appendChild(head); card.appendChild(acts);
+    box.appendChild(card);
+  });
+}
+
+/* ============ rendu : liste ============ */
+function fullName(c){ return (c.first+" "+(c.last||"")).trim(); }
+function subtitle(c){
+  var p = [];
+  if(c.role) p.push(c.role);
+  if(c.company) p.push(c.company);
+  return p.join(" · ") || "—";
+}
+function matches(c){
+  var k = view(c).k;
+  if(filter==="all") return true;
+  if(filter==="todo") return k==="todo";
+  if(filter==="waiting") return k==="sent" || k==="due" || k==="followed";
+  if(filter==="replied") return k==="replied" || k==="call";
+  if(filter==="covered") return k==="covered";
+  return true;
+}
+function renderList(){
+  var box = $("#list"); box.innerHTML = "";
+  var rows = state.contacts.filter(matches);
+  var order = {due:0, todo:1, sent:2, followed:3, replied:4, call:5, covered:6};
+  rows.sort(function(a,b){
+    var d = order[view(a).k] - order[view(b).k];
+    return d !== 0 ? d : fullName(a).localeCompare(fullName(b),"fr");
+  });
+  $("#list-count").textContent = state.contacts.length ? rows.length+" / "+state.contacts.length : "";
+
+  if(!rows.length){
+    var e = el("div","empty");
+    e.appendChild(el("b",null, state.contacts.length ? "Rien dans ce filtre" : "Aucune personne"));
+    e.appendChild(el("div",null, state.contacts.length ? "Change de filtre pour voir le reste." : "Le bouton + en bas ouvre la fiche d'ajout."));
+    box.appendChild(e); return;
+  }
+
+  rows.forEach(function(c){
+    var v = view(c);
+    var item = el("div","item");
+    var main = el("button","item-main");
+    main.appendChild(el("div","item-name", fullName(c)));
+    main.appendChild(el("div","item-sub", subtitle(c)));
+    var pill = el("span","pill "+v.k, v.label + (c.sentAt && v.k!=="todo" ? " · "+humanAge(v.k==="followed"?c.followedAt:c.sentAt) : ""));
+    main.appendChild(pill);
+    main.onclick = function(){ openContact(c.id, v.k==="due" ? "relance" : "li"); };
+    var next = el("button","item-next","›");
+    next.title = "Avancer d'un cran";
+    next.setAttribute("aria-label","Avancer "+fullName(c));
+    if(c.status==="call") next.disabled = true;
+    next.onclick = function(){ advance(c.id); };
+    item.appendChild(main); item.appendChild(next);
+    box.appendChild(item);
+  });
+}
+
+function render(){ renderMeter(); renderBadges(); renderMission(); renderList(); }
+
+/* ============ mutations ============ */
+function byId(id){
+  for(var i=0;i<state.contacts.length;i++) if(state.contacts[i].id===id) return state.contacts[i];
+  return null;
+}
+function setStatus(c, s){
+  var now = Date.now();
+  c.status = s;
+  c.closed = false;
+  if(s==="todo"){ c.sentAt=0; c.followedAt=0; c.repliedAt=0; c.callAt=0; }
+  if(s==="sent"){ if(!c.sentAt) c.sentAt=now; c.followedAt=0; c.repliedAt=0; c.callAt=0; }
+  if(s==="followed"){ if(!c.sentAt) c.sentAt=now; if(!c.followedAt) c.followedAt=now; c.repliedAt=0; c.callAt=0; }
+  if(s==="replied"){ if(!c.sentAt) c.sentAt=now; if(!c.repliedAt) c.repliedAt=now; c.callAt=0; }
+  if(s==="call"){ if(!c.sentAt) c.sentAt=now; if(!c.repliedAt) c.repliedAt=now; if(!c.callAt) c.callAt=now; }
+}
+var CHEER = {
+  sent:["Envoyé. C'est ça le score.","Un de plus sur la planche.","Parti. La suite ne t'appartient pas."],
+  followed:["Relancé. C'est là que la plupart abandonnent.","Deuxième passage — c'est souvent celui qui marche."],
+  replied:["Réponse. Bien joué.","Ça a mordu."],
+  call:["Un call décroché. C'était le but.","Call posé — c'est exactement pour ça que tu envoies."],
+  todo:["Remis à zéro."]
+};
+function advance(id){
+  var c = byId(id); if(!c) return;
+  var order = ["todo","sent","followed","replied","call"];
+  var i = order.indexOf(c.status);
+  if(i>=order.length-1) return;
+  var next = order[i+1];
+  setStatus(c, next);
+  save();
+  render();
+  if(current===id) fillContact();
+  var msgs = CHEER[next] || [""];
+  toast(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+
+/* ============ messages ============ */
+function meName(){ return (state.me.name||"").trim(); }
+function meFirst(){ return meName().split(" ")[0] || ""; }
+function pitch(){
+  var p = (state.me.pitch||"").trim() || "je suis jeune diplômé et je cherche un premier CDI";
+  return p.charAt(0).toUpperCase()+p.slice(1);
+}
+function ask(){ return (state.me.ask||"").trim() || "15 minutes pour comprendre votre métier"; }
+function sign(){ return meName() || "[ton nom — à remplir dans ⚙]"; }
+
+function buildMessage(c, kind){
+  var first = c.first || "";
+  var at = c.company ? " chez "+c.company : "";
+  var hook = (c.hook||"").trim();
+  if(kind==="li"){
+    var parts = ["Bonjour "+first+","];
+    parts.push(pitch()+".");
+    if(hook) parts.push(hook.charAt(0).toUpperCase()+hook.slice(1)+(/[.!?]$/.test(hook)?"":"."));
+    parts.push("Auriez-vous "+ask()+" ? "+(meFirst()?"Merci beaucoup, "+meFirst():"Merci beaucoup"));
+    return parts.join("\n\n");
+  }
+  if(kind==="mail"){
+    var subj = "Objet : "+ask().charAt(0).toUpperCase()+ask().slice(1)+(c.company?" — "+c.company:"");
+    var body = [
+      subj, "",
+      "Bonjour "+first+",", "",
+      pitch()+"."+(hook ? " "+hook.charAt(0).toUpperCase()+hook.slice(1)+(/[.!?]$/.test(hook)?"":".") : ""), "",
+      "Je ne cherche pas à vous vendre quoi que ce soit : je voudrais "+ask()+", pour comprendre comment on arrive à un poste comme le vôtre"+at+".", "",
+      "Si vous avez un créneau dans les deux prochaines semaines, je m'adapte à votre agenda.", "",
+      "Bonne journée,", sign()
+    ];
+    return body.join("\n");
+  }
+  var when = c.sentAt ? " du "+shortDate(c.sentAt) : "";
+  return [
+    "Bonjour "+first+",", "",
+    "Je me permets de revenir vers vous : mon message"+when+" est peut-être passé sous la pile.",
+    "",
+    "Ma demande tient en une ligne — "+ask()+". Et si ce n'est pas le bon moment, dites-le moi simplement, je n'insisterai pas.",
+    "", "Bonne journée,", sign()
+  ].join("\n");
+}
+
+/* ============ fiche contact ============ */
+var dlgC = $("#dlg-contact");
+function openContact(id, kind){
+  current = id; tpl = kind || "li";
+  fillContact();
+  dlgC.showModal();
+}
+function fillContact(){
+  var c = byId(current); if(!c) return;
+  var v = view(c);
+  $("#c-name").textContent = fullName(c);
+  $("#c-meta").textContent = subtitle(c) + (c.sentAt ? " — envoyé "+humanAge(c.sentAt) : "");
+  Array.prototype.forEach.call($("#c-steps").children, function(b){
+    b.setAttribute("aria-pressed", String(b.dataset.s===c.status));
+  });
+  Array.prototype.forEach.call($("#c-tpl").children, function(b){
+    b.setAttribute("aria-pressed", String(b.dataset.t===tpl));
+  });
+  $("#c-hook").value = c.hook||"";
+  $("#c-note").value = c.note||"";
+  var msg = buildMessage(c, tpl);
+  $("#c-msg").textContent = msg;
+  var cnt = $("#c-count");
+  if(tpl==="li"){
+    cnt.textContent = msg.length+" / 300 caractères (limite d'une invitation LinkedIn)";
+    cnt.className = "count" + (msg.length>300 ? " over" : "");
+  } else {
+    cnt.textContent = msg.length+" caractères";
+    cnt.className = "count";
+  }
+  $("#c-open").textContent = c.linkedin ? "Ouvrir LinkedIn" : (c.email ? "Écrire le mail" : "Ouvrir");
+}
+$("#c-steps").addEventListener("click", function(e){
+  var b = e.target.closest("[data-s]"); if(!b) return;
+  var c = byId(current); if(!c) return;
+  setStatus(c, b.dataset.s); save(); fillContact(); render();
+  toast("Statut : "+view(c).label.toLowerCase());
+});
+$("#c-tpl").addEventListener("click", function(e){
+  var b = e.target.closest("[data-t]"); if(!b) return;
+  tpl = b.dataset.t; fillContact();
+});
+$("#c-hook").addEventListener("input", function(){
+  var c = byId(current); if(!c) return;
+  c.hook = this.value; save();
+  var msg = buildMessage(c, tpl);
+  $("#c-msg").textContent = msg;
+  if(tpl==="li"){
+    $("#c-count").textContent = msg.length+" / 300 caractères (limite d'une invitation LinkedIn)";
+    $("#c-count").className = "count"+(msg.length>300?" over":"");
+  }
+});
+$("#c-note").addEventListener("input", function(){
+  var c = byId(current); if(!c) return;
+  c.note = this.value; save();
+});
+$("#c-copy").addEventListener("click", function(){
+  var c = byId(current); if(!c) return;
+  var msg = buildMessage(c, tpl);
+  copy(msg).then(function(ok){
+    var moved = "";
+    if(tpl==="relance" && (c.status==="sent")){ setStatus(c,"followed"); moved = " Marqué relancé."; }
+    else if(c.status==="todo"){ setStatus(c,"sent"); moved = " Marqué envoyé — relance prévue dans 7 jours."; }
+    save(); render(); fillContact();
+    toast((ok ? "Copié." : "Copie impossible, sélectionne le texte.") + moved);
+  });
+});
+$("#c-open").addEventListener("click", function(){
+  var c = byId(current); if(!c) return;
+  if(c.linkedin){ window.open(c.linkedin, "_blank", "noopener"); return; }
+  if(c.email){
+    var m = buildMessage(c, tpl==="li" ? "mail" : tpl);
+    var lines = m.split("\n");
+    var subj = lines[0].indexOf("Objet : ")===0 ? lines[0].slice(8) : ask();
+    var body = lines[0].indexOf("Objet : ")===0 ? lines.slice(2).join("\n") : m;
+    window.location.href = "mailto:"+encodeURIComponent(c.email)+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+    return;
+  }
+  toast("Pas de lien LinkedIn ni d'email sur cette fiche.");
+});
+$("#c-del").addEventListener("click", function(){
+  var c = byId(current); if(!c) return;
+  if(!window.confirm("Supprimer "+fullName(c)+" ?")) return;
+  state.contacts = state.contacts.filter(function(x){ return x.id!==current; });
+  save(); render(); dlgC.close(); toast("Supprimé.");
+});
+$("#c-edit").addEventListener("click", function(){ openEdit(current); });
+
+/* ============ ajout / édition ============ */
+var dlgE = $("#dlg-edit");
+function openEdit(id){
+  editing = id||null;
+  var c = id ? byId(id) : null;
+  $("#e-title").textContent = c ? "Modifier la fiche" : "Nouvelle personne";
+  $("#e-save").textContent = c ? "Enregistrer" : "Ajouter";
+  $("#e-first").value = c?c.first:"";
+  $("#e-last").value = c?(c.last||""):"";
+  $("#e-company").value = c?(c.company||""):"";
+  $("#e-role").value = c?(c.role||""):"";
+  $("#e-linkedin").value = c?(c.linkedin||""):"";
+  $("#e-email").value = c?(c.email||""):"";
+  dlgE.showModal();
+}
+$("#form-edit").addEventListener("submit", function(){
+  var first = $("#e-first").value.trim();
+  if(!first) return;
+  var last = $("#e-last").value.trim();
+  if(!last && first.indexOf(" ")>0){ var p=first.split(" "); first=p.shift(); last=p.join(" "); }
+  var data = {
+    first:first, last:last,
+    company:$("#e-company").value.trim(), role:$("#e-role").value.trim(),
+    linkedin:$("#e-linkedin").value.trim(), email:$("#e-email").value.trim()
+  };
+  if(editing){
+    var c = byId(editing);
+    for(var k in data) c[k] = data[k];
+    if(current===editing) fillContact();
+    toast("Fiche mise à jour.");
+  } else {
+    state.contacts.push(newContact(data));
+    toast("Ajouté à la planche.");
+  }
+  editing = null; save(); render();
+});
+function newContact(d){
+  return {
+    id: "c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    first:d.first||"", last:d.last||"", company:d.company||"", role:d.role||"",
+    linkedin:d.linkedin||"", email:d.email||"", hook:d.hook||"", note:"",
+    status:"todo", sentAt:0, followedAt:0, repliedAt:0, callAt:0, closed:false,
+    createdAt: Date.now()
+  };
+}
+
+/* ============ réglages ============ */
+var dlgS = $("#dlg-settings");
+$("#btn-settings").addEventListener("click", function(){
+  $("#s-name").value = state.me.name||"";
+  $("#s-pitch").value = state.me.pitch||"";
+  $("#s-ask").value = state.me.ask||"";
+  $("#s-goal").value = state.goal;
+  dlgS.showModal();
+});
+$("#form-settings").addEventListener("submit", function(){
+  state.me = { name:$("#s-name").value.trim(), pitch:$("#s-pitch").value.trim(), ask:$("#s-ask").value.trim() };
+  var g = parseInt($("#s-goal").value,10);
+  state.goal = (g && g>0 && g<1000) ? g : 30;
+  save(); render();
+  if(current) fillContact();
+  toast("C'est noté.");
+});
+
+/* ============ sauvegarde fichier ============ */
+$("#s-export").addEventListener("click", function(){
+  var blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "objectif-30-sauvegarde.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  toast("Copie téléchargée.");
+});
+$("#s-restore").addEventListener("click", function(){ $("#s-file").click(); });
+$("#s-file").addEventListener("change", function(){
+  var f = this.files && this.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    var data;
+    try{ data = normalize(JSON.parse(String(r.result))); }catch(e){ data = null; }
+    if(!data){ toast("Ce fichier n'est pas une sauvegarde Objectif 30."); return; }
+    if(!window.confirm("Remplacer les "+state.contacts.length+" personnes actuelles par les "+data.contacts.length+" du fichier ?")) return;
+    state = data; save(); render();
+    toast("Sauvegarde restaurée.");
+  };
+  r.readAsText(f, "utf-8");
+  this.value = "";
+});
+
+/* ============ import CSV ============ */
+var dlgI = $("#dlg-import");
+var FIELDS = [
+  {k:"first",    t:"Prénom",     re:/^(pr[ée]nom|first ?name|given)/i},
+  {k:"last",     t:"Nom",        re:/^(nom|last ?name|surname|family)/i},
+  {k:"company",  t:"Entreprise", re:/(entreprise|soci[ée]t[ée]|company|boite|bo[îi]te|organisation|employer)/i},
+  {k:"role",     t:"Poste",      re:/(poste|fonction|r[ôo]le|role|title|job)/i},
+  {k:"linkedin", t:"LinkedIn",   re:/(linkedin|profil|url|lien)/i},
+  {k:"email",    t:"Email",      re:/(e-?mail|mail|courriel)/i}
+];
+function parseCSV(text){
+  text = text.replace(/^﻿/,"");
+  var head = text.split(/\r?\n/)[0] || "";
+  var sep = ",";
+  [",",";","\t"].forEach(function(s){
+    if((head.split(s).length-1) > (head.split(sep).length-1)) sep = s;
+  });
+  var rows=[], row=[], cell="", q=false;
+  for(var i=0;i<text.length;i++){
+    var ch = text[i];
+    if(q){
+      if(ch === '"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; }
+      else cell += ch;
+    } else if(ch === '"'){ q = true; }
+    else if(ch === sep){ row.push(cell); cell=""; }
+    else if(ch === "\n"){ row.push(cell); rows.push(row); row=[]; cell=""; }
+    else if(ch === "\r"){ /* ignore */ }
+    else cell += ch;
+  }
+  if(cell.length || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(c){ return c.trim()!==""; }); });
+}
+function keyOf(c){
+  return (c.first+" "+(c.last||"")+" "+(c.company||"")).toLowerCase().replace(/\s+/g," ").trim();
+}
+$("#i-file").addEventListener("change", function(){
+  var f = this.files && this.files[0]; if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    var rows = parseCSV(String(r.result));
+    if(rows.length<2){ toast("Ce fichier n'a pas l'air d'être un CSV lisible."); return; }
+    pending = {head:rows[0], body:rows.slice(1), map:{}};
+    FIELDS.forEach(function(f2){
+      pending.map[f2.k] = -1;
+      pending.head.forEach(function(h,i){ if(pending.map[f2.k]<0 && f2.re.test(h.trim())) pending.map[f2.k]=i; });
+    });
+    if(pending.map.first<0 && pending.map.last>=0){ pending.map.first = pending.map.last; pending.map.last = -1; }
+    if(pending.map.first<0) pending.map.first = 0;
+    renderImport();
+  };
+  r.readAsText(f, "utf-8");
+});
+function renderImport(){
+  $("#i-map").hidden = false;
+  $("#i-go").disabled = false;
+  $("#i-found").textContent = pending.body.length+" ligne"+(pending.body.length>1?"s":"")+" détectée"+(pending.body.length>1?"s":"")+". Vérifie que chaque colonne tombe au bon endroit.";
+  var box = $("#i-selects"); box.innerHTML = "";
+  FIELDS.forEach(function(f){
+    var lab = el("label","field");
+    lab.appendChild(el("span",null,f.t));
+    var sel = document.createElement("select");
+    var o0 = document.createElement("option"); o0.value="-1"; o0.textContent="—"; sel.appendChild(o0);
+    pending.head.forEach(function(h,i){
+      var o = document.createElement("option"); o.value=String(i); o.textContent = h.trim()||("colonne "+(i+1));
+      sel.appendChild(o);
+    });
+    sel.value = String(pending.map[f.k]);
+    sel.onchange = function(){ pending.map[f.k] = parseInt(this.value,10); renderPreview(); };
+    lab.appendChild(sel);
+    box.appendChild(lab);
+  });
+  renderPreview();
+}
+function renderPreview(){
+  var t = $("#i-preview"); t.innerHTML = "";
+  var tr = document.createElement("tr");
+  FIELDS.forEach(function(f){ var th=document.createElement("th"); th.textContent=f.t; tr.appendChild(th); });
+  t.appendChild(tr);
+  pending.body.slice(0,3).forEach(function(row){
+    var r = document.createElement("tr");
+    FIELDS.forEach(function(f){
+      var td = document.createElement("td");
+      var i = pending.map[f.k];
+      td.textContent = i>=0 ? (row[i]||"").trim() : "—";
+      r.appendChild(td);
+    });
+    t.appendChild(r);
+  });
+}
+$("#i-go").addEventListener("click", function(){
+  if(!pending) return;
+  var seen = {};
+  state.contacts.forEach(function(c){ seen[keyOf(c)] = 1; });
+  var added=0, dupes=0;
+  pending.body.forEach(function(row){
+    var d = {};
+    FIELDS.forEach(function(f){ var i=pending.map[f.k]; d[f.k] = i>=0 ? (row[i]||"").trim() : ""; });
+    if(!d.first && !d.last) return;
+    if(!d.last && d.first.indexOf(" ")>0){ var p=d.first.split(" "); d.first=p.shift(); d.last=p.join(" "); }
+    var c = newContact(d);
+    var k = keyOf(c);
+    if(seen[k]){ dupes++; return; }
+    seen[k]=1; state.contacts.push(c); added++;
+  });
+  pending = null;
+  $("#i-file").value = ""; $("#i-map").hidden = true; $("#i-go").disabled = true;
+  save(); render(); dlgI.close();
+  toast(added+" ajouté"+(added>1?"s":"")+(dupes?" · "+dupes+" doublon"+(dupes>1?"s":"")+" ignoré"+(dupes>1?"s":""):""));
+});
+
+/* ============ divers UI ============ */
+$("#btn-add").addEventListener("click", function(){ openEdit(null); });
+$("#btn-import").addEventListener("click", function(){ dlgI.showModal(); });
+$("#filters").addEventListener("click", function(e){
+  var b = e.target.closest("[data-f]"); if(!b) return;
+  filter = b.dataset.f;
+  Array.prototype.forEach.call(this.children, function(x){ x.setAttribute("aria-pressed", String(x.dataset.f===filter)); });
+  renderList();
+});
+document.addEventListener("click", function(e){
+  var b = e.target.closest("[data-close]");
+  if(b){ var d = b.closest("dialog"); if(d) d.close(); }
+});
+var toastT;
+function toast(msg){
+  if(!msg) return;
+  var t = $("#toast");
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ t.classList.remove("on"); }, 2600);
+}
+function copy(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).then(function(){ return true; }).catch(function(){ return legacyCopy(text); });
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+function legacyCopy(text){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    var ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+
+/* ============ persistance ============ */
+var saveState = "";
+var lsOk = (function(){ try{ localStorage.setItem("__o30","1"); localStorage.removeItem("__o30"); return true; }catch(e){ return false; } })();
+function setSave(s){
+  saveState = s;
+  var m = {saving:"Enregistrement…", saved:"Enregistré", none:"Non enregistré", "":""};
+  $("#savechip").textContent = m[s]||"";
+  var w = $("#warn");
+  if(s==="none"){
+    w.hidden = false;
+    w.innerHTML = "<b>Ce navigateur n'arrive pas à enregistrer.</b> Le mode navigation privée ou un stockage plein en sont souvent la cause. Ce que tu saisis disparaîtra en fermant l'onglet.";
+  } else {
+    w.hidden = true;
+  }
+}
+var saveT;
+function save(){
+  state.updatedAt = Date.now();
+  setSave(lsOk ? "saving" : "none");
+  clearTimeout(saveT);
+  saveT = setTimeout(function(){
+    if(!lsOk) return;
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); setSave("saved"); }
+    catch(e){ setSave("none"); }
+  }, 250);
+}
+
+function normalize(s){
+  if(!s || typeof s!=="object" || !Array.isArray(s.contacts)) return null;
+  s.me = s.me || {name:"",pitch:"",ask:""};
+  s.goal = s.goal || 30;
+  s.contacts = s.contacts.map(function(c){ return Object.assign(newContact({}), c); });
+  return s;
+}
+function load(){
+  var local = null;
+  if(lsOk){ try{ local = normalize(JSON.parse(localStorage.getItem(KEY)||"null")); }catch(e){} }
+  if(local){ state = local; }
+  render();
+  setSave(lsOk ? (local ? "saved" : "") : "none");
+}
+
+load();
+})();
+</script>
+</body>
+</html>
