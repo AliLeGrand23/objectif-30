@@ -239,6 +239,7 @@ dialog{
   max-height:100%; margin:auto auto 0;
 }
 dialog::backdrop{background:rgba(10,14,22,.55)}
+.sheet-box > *{flex:none}
 .sheet-box{
   background:var(--card); border:1px solid var(--rule); border-radius:16px 16px 0 0;
   padding:18px 16px calc(20px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:14px;
@@ -260,8 +261,8 @@ input[type=text],input[type=email],input[type=url],textarea,select{
 textarea{min-height:74px; resize:vertical; line-height:1.45}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .steps{display:flex; gap:5px; overflow-x:auto; scrollbar-width:none}
-.steps.wrap{flex-wrap:wrap; overflow:visible}
-.steps.wrap .step{flex:1 1 30%; min-width:0}
+.steps.all{flex-wrap:wrap; overflow:visible}
+.steps.all .step{flex:1 1 28%; min-width:0}
 .steps::-webkit-scrollbar{display:none}
 .step{
   flex:1; min-width:72px; border:1px solid var(--rule-strong); background:transparent; color:var(--ink-soft);
@@ -379,7 +380,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
       <button class="iconbtn" data-close aria-label="Fermer">✕</button>
     </div>
 
-    <div class="steps wrap" id="c-steps">
+    <div class="steps all" id="c-steps">
       <button class="step" data-s="todo">À contacter</button>
       <button class="step" data-s="sent">Envoyé</button>
       <button class="step" data-s="followed">Relancé</button>
@@ -483,7 +484,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2241";
+var APP_VERSION = "20260820-2244";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{name:"",pitch:"",ask:"",skill:"",voice:""}, goal:30, contacts:[], updatedAt:0 };
