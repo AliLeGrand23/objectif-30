@@ -497,7 +497,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2317";
+var APP_VERSION = "20260820-2321";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{}, goal:30, contacts:[], deleted:[], sync:{token:"",gistId:""}, updatedAt:0 };
@@ -1047,7 +1047,7 @@ $("#y-connect").addEventListener("click", function(){
   suite.then(function(id){
     state.sync.gistId = id;
     $("#y-gist").value = id;
-    return tirer();
+    return synchroniser();
   }).then(function(ok){
     save(); etatSync();
     toast(ok ? "Connecté. Tes deux appareils partagent le même carnet." : "Connecté, mais la synchro n'a pas répondu.");
@@ -1057,7 +1057,7 @@ $("#y-connect").addEventListener("click", function(){
 });
 $("#y-now").addEventListener("click", function(){
   if(!syncPret()){ toast("Connecte d'abord tes appareils."); return; }
-  pousser().then(function(ok){ toast(ok ? "À jour sur tes deux appareils." : "Synchro impossible pour l'instant."); });
+  synchroniser().then(function(ok){ toast(ok ? "À jour sur tes deux appareils." : "Synchro impossible pour l'instant."); });
 });
 
 $("#form-settings").addEventListener("submit", function(){
@@ -1289,8 +1289,9 @@ function ecrireGist(etat){
   });
 }
 
-/* On relit toujours avant d'écrire : jamais d'écrasement aveugle. */
-function pousser(){
+/* Lit, fusionne, réécrit. Une seule opération pour les deux sens : ce que
+   l'autre appareil a fait descend, ce qu'on a fait hors ligne remonte. */
+function synchroniser(){
   if(!syncPret() || syncEnCours) return Promise.resolve(false);
   syncEnCours = true;
   marqueSync("Synchro…");
@@ -1314,34 +1315,10 @@ function pousser(){
       return false;                       // les données locales restent intactes
     });
 }
-function tirer(){
-  if(!syncPret() || syncEnCours) return Promise.resolve(false);
-  syncEnCours = true;
-  marqueSync("Synchro…");
-  return lireGist()
-    .then(function(distant){
-      if(distant){
-        state = mergeState(state, distant);
-        saveLocal();
-        render();
-        if(current && !byId(current)) $("#dlg-contact").close();
-        else if(current) fillContact();
-      }
-      dernierSync = Date.now();
-      marqueSync("Synchronisé");
-      syncEnCours = false;
-      return true;
-    })
-    .catch(function(err){
-      syncEnCours = false;
-      marqueSync(err && err.code==="jeton" ? "Jeton refusé" : "Hors ligne");
-      return false;
-    });
-}
 function planifierSync(){
   if(!syncPret()) return;
   clearTimeout(syncT);
-  syncT = setTimeout(pousser, 3000);      // on laisse Ali finir sa saisie
+  syncT = setTimeout(synchroniser, 3000);      // on laisse Ali finir sa saisie
 }
 
 /* ============ mise à jour de l'app ============ */
@@ -1478,9 +1455,9 @@ if(window.ResizeObserver) new ResizeObserver(fitDock).observe(document.querySele
 
 load();
 checkUpdate();
-tirer();                                   // au démarrage : ce que l'autre appareil a laissé
+synchroniser();                            // au démarrage : ce que l'autre appareil a laissé
 document.addEventListener("visibilitychange", function(){
-  if(document.visibilityState==="visible"){ checkUpdate(); tirer(); }   // à chaque retour dans l'app
+  if(document.visibilityState==="visible"){ checkUpdate(); synchroniser(); }   // à chaque retour dans l'app
 });
 })();
 </script>
