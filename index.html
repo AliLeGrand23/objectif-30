@@ -156,6 +156,13 @@ section{display:flex; flex-direction:column; gap:12px}
 .btn.wide{flex:1}
 .btn.sm{padding:8px 12px; min-height:38px; font-size:13.5px}
 .btn.danger{background:transparent; border-color:var(--stamp); color:var(--stamp)}
+.missing{
+  display:block; width:100%; text-align:left; font:inherit; font-size:13px;
+  background:var(--card-2); border:1px dashed var(--rule-strong); color:var(--ink-soft);
+  border-radius:8px; padding:10px 12px; min-height:44px;
+}
+.missing:hover{border-color:var(--ink); color:var(--ink)}
+.missing b{color:var(--ink); font-weight:600}
 .empty{
   border:1.5px dashed var(--rule-strong); border-radius:var(--r); padding:22px 16px; text-align:center;
   color:var(--ink-soft); font-size:14px;
@@ -349,6 +356,8 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
       <button class="iconbtn" data-close aria-label="Fermer">✕</button>
     </div>
 
+    <button class="missing" id="c-missing" hidden></button>
+
     <div>
       <span class="lbl" style="display:block;margin-bottom:6px">Où on en est</span>
       <div class="steps" id="c-steps">
@@ -418,15 +427,18 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
       <h3 id="e-title">Nouvelle personne</h3>
       <button class="iconbtn" type="button" data-close aria-label="Fermer">✕</button>
     </div>
+    <button class="btn ghost" type="button" id="e-paste">📋 Coller un profil copié</button>
+    <p class="hint">Copie le lien du profil depuis LinkedIn, puis touche ce bouton : le nom se remplit tout seul. Ça marche aussi avec un email ou un numéro.</p>
     <div class="grid2">
-      <label class="field"><span>Prénom</span><input type="text" id="e-first" required></label>
+      <label class="field"><span>Prénom</span><input type="text" id="e-first"></label>
       <label class="field"><span>Nom</span><input type="text" id="e-last"></label>
     </div>
     <label class="field"><span>Entreprise</span><input type="text" id="e-company"></label>
     <label class="field"><span>Poste</span><input type="text" id="e-role"></label>
-    <label class="field"><span>Profil LinkedIn</span><input type="url" id="e-linkedin" placeholder="https://www.linkedin.com/in/…"></label>
-    <label class="field"><span>Email</span><input type="email" id="e-email"></label>
-    <label class="field"><span>Téléphone (pour WhatsApp)</span><input type="text" id="e-phone" inputmode="tel" placeholder="+33 6 12 34 56 78"></label>
+    <label class="field"><span>Profil LinkedIn</span><input type="text" id="e-linkedin" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="linkedin.com/in/… — colle, peu importe la forme"></label>
+    <label class="field"><span>Email</span><input type="text" id="e-email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <label class="field"><span>Téléphone (pour WhatsApp)</span><input type="text" id="e-phone" inputmode="tel" placeholder="06 12 34 56 78"></label>
+    <p class="hint">Tout est facultatif sauf le prénom — tu complètes plus tard, quand tu as les infos.</p>
     <div class="dlg-foot">
       <button class="btn wide" type="submit" id="e-save">Ajouter</button>
       <button class="btn ghost" type="button" data-close>Annuler</button>
@@ -989,6 +1001,58 @@ function buildBrief(c, channel, moment){
   return L.join("\n");
 }
 
+/* ---- ce qu'on colle depuis un téléphone est rarement propre ---- */
+function tidyUrl(raw){
+  var u = String(raw||"").trim().replace(/\s+/g,"");
+  if(!u) return "";
+  u = u.replace(/^[<(\[]+|[>)\]]+$/g,"");
+  if(/^https?:\/\//i.test(u)) return u;
+  if(/^\/\//.test(u)) return "https:"+u;
+  return "https://"+u.replace(/^www\./i,"www.");
+}
+/* le slug d'un profil porte souvent le nom : /in/camille-rousseau-8b12 */
+function nameFromLinkedin(url){
+  var m = String(url||"").match(/linkedin\.com\/in\/([^\/?#]+)/i);
+  if(!m) return null;
+  var parts = decodeURIComponent(m[1]).split("-").filter(function(w){
+    return w.length>1 && !/\d/.test(w);      // on jette les identifiants
+  });
+  if(!parts.length) return null;
+  var nice = parts.map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase(); });
+  return { first: nice[0], last: nice.slice(1).join(" ") };
+}
+/* on accepte n'importe quel copier-coller et on devine ce que c'est */
+function readPasted(txt){
+  var t = String(txt||"").trim();
+  if(!t) return null;
+  var url = (t.match(/https?:\/\/[^\s]+/i)||[])[0] || (/linkedin\.com\/in\//i.test(t) ? t.split(/\s+/).find(function(w){ return /linkedin\.com/i.test(w); }) : "");
+  var mail = (t.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)||[])[0] || "";
+  var tel  = (t.match(/(\+?\d[\d .\-]{7,}\d)/)||[])[0] || "";
+  var out = {};
+  if(url && /linkedin\.com/i.test(url)){
+    out.linkedin = tidyUrl(url);
+    var n = nameFromLinkedin(out.linkedin);
+    if(n){ out.first = n.first; out.last = n.last; }
+  }
+  if(mail){
+    out.email = mail;
+    if(!out.first){
+      var local = mail.split("@")[0].split(/[._-]/).filter(function(w){ return w.length>1 && !/\d/.test(w); });
+      if(local.length){
+        out.first = local[0].charAt(0).toUpperCase()+local[0].slice(1);
+        if(local[1]) out.last = local[1].charAt(0).toUpperCase()+local[1].slice(1);
+      }
+    }
+  }
+  if(tel && !mail) out.phone = tel.trim();
+  if(!out.linkedin && !out.email && !out.phone){
+    var mots = t.split(/\s+/).slice(0,3);
+    out.first = mots[0];
+    if(mots[1]) out.last = mots.slice(1).join(" ");
+  }
+  return out;
+}
+
 /* WhatsApp attend un numéro international sans "+" : 06 12 34 56 78 -> 33612345678 */
 function waNumber(raw){
   var n = String(raw||"").replace(/[^0-9+]/g,"");
@@ -1069,6 +1133,16 @@ function fillContact(replace){
   if(replace || !dirty){ $("#c-msg").value = buildMessage(c, chan, moment); }
   updateCount();
   renderHistory(c);
+  var manque = [];
+  if(!c.linkedin) manque.push("le profil LinkedIn");
+  if(!c.email) manque.push("l'email");
+  if(!c.company) manque.push("l'entreprise");
+  if(!c.role) manque.push("le poste");
+  var mb = $("#c-missing");
+  if(manque.length){
+    mb.hidden = false;
+    mb.innerHTML = "Il manque "+manque.join(", ")+". <b>Compléter →</b>";
+  } else { mb.hidden = true; }
   $("#c-open").textContent = chan==="mail" ? "Écrire le mail" : (chan==="wa" ? "Ouvrir WhatsApp" : "Ouvrir LinkedIn");
   $("#c-claude-hint").textContent = (state.me.skill||"").trim()
     ? "Le brief appelle ton skill « "+state.me.skill.trim()+" ». Tu colles dans Claude, il rédige, tu reviens coller sa réponse ici."
@@ -1170,6 +1244,7 @@ $("#c-del").addEventListener("click", function(){
   save(); render(); dlgC.close(); toast("Supprimé.");
 });
 $("#c-edit").addEventListener("click", function(){ openEdit(current); });
+$("#c-missing").addEventListener("click", function(){ openEdit(current); });
 
 /* ============ ajout / édition ============ */
 var dlgE = $("#dlg-edit");
@@ -1187,21 +1262,50 @@ function openEdit(id){
   $("#e-phone").value = c?(c.phone||""):"";
   dlgE.showModal();
 }
-$("#form-edit").addEventListener("submit", function(){
+$("#e-paste").addEventListener("click", function(){
+  if(!navigator.clipboard || !navigator.clipboard.readText){
+    toast("Ce navigateur ne me laisse pas lire le presse-papier — colle dans le champ à la main.");
+    return;
+  }
+  navigator.clipboard.readText().then(function(txt){
+    var d = readPasted(txt);
+    if(!d){ toast("Le presse-papier est vide."); return; }
+    var mis = [];
+    if(d.first && !$("#e-first").value){ $("#e-first").value = d.first; mis.push("prénom"); }
+    if(d.last && !$("#e-last").value){ $("#e-last").value = d.last; mis.push("nom"); }
+    if(d.linkedin){ $("#e-linkedin").value = d.linkedin; mis.push("profil"); }
+    if(d.email){ $("#e-email").value = d.email; mis.push("email"); }
+    if(d.phone){ $("#e-phone").value = d.phone; mis.push("téléphone"); }
+    toast(mis.length ? "Rempli : "+mis.join(", ")+". Corrige si besoin." : "Rien d'exploitable là-dedans.");
+  }).catch(function(){
+    toast("Autorisation refusée — colle directement dans le champ.");
+  });
+});
+$("#form-edit").addEventListener("submit", function(e){
   var first = $("#e-first").value.trim();
-  if(!first) return;
+  var lien = tidyUrl($("#e-linkedin").value);
+  if(!first && lien){                       // le prénom peut se déduire du profil
+    var devine = nameFromLinkedin(lien);
+    if(devine){ first = devine.first; if(!$("#e-last").value) $("#e-last").value = devine.last; }
+  }
+  if(!first){
+    e.preventDefault();                     // sinon la fenêtre se ferme et la saisie est perdue
+    toast("Il me faut au moins un prénom.");
+    $("#e-first").focus();
+    return;
+  }
   var last = $("#e-last").value.trim();
   if(!last && first.indexOf(" ")>0){ var p=first.split(" "); first=p.shift(); last=p.join(" "); }
   var data = {
     first:first, last:last,
     company:$("#e-company").value.trim(), role:$("#e-role").value.trim(),
-    linkedin:$("#e-linkedin").value.trim(), email:$("#e-email").value.trim(),
+    linkedin:lien, email:$("#e-email").value.trim(),
     phone:$("#e-phone").value.trim()
   };
   if(editing){
     var c = byId(editing);
     for(var k in data) c[k] = data[k];
-    if(current===editing) fillContact();
+    if(current===editing) fillContact(true);
     toast("Fiche mise à jour.");
   } else {
     state.contacts.push(newContact(data));
