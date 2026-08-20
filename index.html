@@ -457,6 +457,24 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
   </div>
 </dialog>
 
+<!-- brief de secours, si le presse-papier est refusé -->
+<dialog id="dlg-brief">
+  <div class="sheet-box">
+    <div class="dlg-head">
+      <div>
+        <h3>Le brief</h3>
+        <div class="meta">Le presse-papier a été refusé. Sélectionne ce texte et copie-le à la main.</div>
+      </div>
+      <button class="iconbtn" data-close aria-label="Fermer">✕</button>
+    </div>
+    <textarea id="b-text" rows="12" readonly></textarea>
+    <div class="dlg-foot">
+      <button class="btn wide" id="b-copy">Réessayer la copie</button>
+      <button class="btn ghost" data-close>Fermer</button>
+    </div>
+  </div>
+</dialog>
+
 <!-- réglages -->
 <dialog id="dlg-settings">
   <form method="dialog" class="sheet-box" id="form-settings">
@@ -1075,11 +1093,18 @@ $("#c-tpl").addEventListener("click", function(){
 $("#c-claude").addEventListener("click", function(){
   var c = byId(current); if(!c) return;
   var brief = buildBrief(c, chan, moment);
-  copy(brief).then(function(ok){
-    if(!ok){ toast("Copie impossible sur ce navigateur."); return; }
-    toast("Brief copié — colle-le dans Claude.");
-    window.open("https://claude.ai/new", "_blank", "noopener");
+  var pending = copy(brief);                                   // lancé pendant le geste
+  window.open("https://claude.ai/new", "_blank", "noopener");   // idem, sinon le popup est bloqué
+  pending.then(function(ok){
+    if(ok){ toast("Brief copié — colle-le dans Claude."); return; }
+    $("#b-text").value = brief;                                 // secours : à sélectionner à la main
+    $("#dlg-brief").showModal();
   });
+});
+$("#b-copy").addEventListener("click", function(){
+  var t = $("#b-text");
+  t.focus(); t.select();
+  copy(t.value).then(function(ok){ toast(ok ? "Brief copié." : "Copie refusée — garde le texte sélectionné et fais Copier."); });
 });
 $("#c-hook").addEventListener("input", function(){
   var c = byId(current); if(!c) return;
