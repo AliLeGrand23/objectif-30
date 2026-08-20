@@ -484,7 +484,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2244";
+var APP_VERSION = "20260820-2246";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{name:"",pitch:"",ask:"",skill:"",voice:""}, goal:30, contacts:[], updatedAt:0 };
@@ -860,13 +860,13 @@ function lastTouch(c){
 }
 function fillContact(){
   var c = byId(current); if(!c) return;
-  var v = view(c), t = lastTouch(c);
+  var t = lastTouch(c);
   $("#c-name").textContent = fullName(c);
 
   var meta = [];
   if(subtitle(c)) meta.push(subtitle(c));
-  meta.push(t ? v.label+" · "+humanAge(t) : v.label);
-  $("#c-meta").textContent = meta.join(" — ");
+  if(t) meta.push("dernier contact "+humanAge(t));   // le statut est déjà lisible en dessous
+  $("#c-meta").textContent = meta.join(" · ");
 
   Array.prototype.forEach.call($("#c-steps").children, function(b){
     b.setAttribute("aria-pressed", String(b.dataset.s===c.status));
