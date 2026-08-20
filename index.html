@@ -25,6 +25,7 @@
   --focus:#16233A;
   --shadow:0 1px 0 rgba(22,35,58,.06), 0 6px 18px -12px rgba(22,35,58,.35);
   --r:10px;
+  --dock-h:120px;
   --f-display:"Bricolage Grotesque","Public Sans",system-ui,sans-serif;
   --f-body:"Public Sans",system-ui,-apple-system,sans-serif;
   --f-data:"Courier Prime",ui-monospace,"SF Mono",monospace;
@@ -57,7 +58,7 @@ body{
 }
 .wrap{
   max-width:560px; margin:0 auto; display:flex; flex-direction:column; gap:26px;
-  padding:calc(20px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 104px max(16px, env(safe-area-inset-left));
+  padding:calc(20px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) var(--dock-h, 120px) max(16px, env(safe-area-inset-left));
 }
 h1,h2,h3{margin:0; font-family:var(--f-display); text-wrap:balance; letter-spacing:-.015em}
 button{font:inherit; color:inherit; cursor:pointer}
@@ -162,6 +163,16 @@ section{display:flex; flex-direction:column; gap:12px}
   padding:13px 15px; min-height:44px; box-shadow:var(--shadow);
 }
 .update b{font-weight:700}
+.links{display:flex; flex-direction:column; border:1px solid var(--rule); border-radius:var(--r); overflow:hidden}
+.linkrow{
+  display:block; width:100%; text-align:left; font:inherit; font-size:15px;
+  padding:13px 14px; min-height:48px; color:var(--ink); text-decoration:none;
+  background:transparent; border:0; border-bottom:1px solid var(--rule);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.linkrow:last-child{border-bottom:0}
+.linkrow:hover{background:var(--card-2)}
+.linkrow.add{color:var(--ink-soft); font-size:14px}
 .missing{
   display:block; width:100%; text-align:left; font:inherit; font-size:13px;
   background:var(--card-2); border:1px dashed var(--rule-strong); color:var(--ink-soft);
@@ -249,6 +260,8 @@ input[type=text],input[type=email],input[type=url],textarea,select{
 textarea{min-height:74px; resize:vertical; line-height:1.45}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .steps{display:flex; gap:5px; overflow-x:auto; scrollbar-width:none}
+.steps.wrap{flex-wrap:wrap; overflow:visible}
+.steps.wrap .step{flex:1 1 30%; min-width:0}
 .steps::-webkit-scrollbar{display:none}
 .step{
   flex:1; min-width:72px; border:1px solid var(--rule-strong); background:transparent; color:var(--ink-soft);
@@ -366,65 +379,23 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
       <button class="iconbtn" data-close aria-label="Fermer">✕</button>
     </div>
 
-    <button class="missing" id="c-missing" hidden></button>
-
-    <div>
-      <span class="lbl" style="display:block;margin-bottom:6px">Où on en est</span>
-      <div class="steps" id="c-steps">
-        <button class="step" data-s="todo">À contacter</button>
-        <button class="step" data-s="sent">Envoyé</button>
-        <button class="step" data-s="followed">Relancé</button>
-        <button class="step" data-s="replied">Réponse</button>
-        <button class="step" data-s="call">Call / RDV</button>
-      </div>
+    <div class="steps wrap" id="c-steps">
+      <button class="step" data-s="todo">À contacter</button>
+      <button class="step" data-s="sent">Envoyé</button>
+      <button class="step" data-s="followed">Relancé</button>
+      <button class="step" data-s="replied">Réponse</button>
+      <button class="step" data-s="call">Call</button>
     </div>
 
-    <label class="field">
-      <span>Accroche</span>
-      <textarea id="c-hook" placeholder="j'ai vu votre passage de l'audit au produit, c'est exactement le virage qui m'intéresse"></textarea>
-    </label>
-    <p class="hint">La phrase qui prouve que le message n'est pas un copier-coller.</p>
-
-    <hr class="rule">
-
-    <div>
-      <span class="lbl" style="display:block;margin-bottom:6px">Par où</span>
-      <div class="steps" id="c-chan" style="margin-bottom:12px"></div>
-      <span class="lbl" style="display:block;margin-bottom:6px">Quel moment</span>
-      <div class="steps" id="c-moment"></div>
-    </div>
-
-    <div class="dlg-foot">
-      <button class="btn wide" id="c-claude">Écrire avec Claude</button>
-      <button class="btn ghost" id="c-tpl">Modèle</button>
-    </div>
-    <p class="hint" id="c-claude-hint">Prépare tout le contexte, le copie et ouvre Claude. Tu colles, il rédige, tu reviens coller sa réponse ici.</p>
-
-    <label class="field">
-      <span>Le message</span>
-      <textarea id="c-msg" rows="8" placeholder="Colle ici ce que Claude t'a écrit, ou pars du modèle."></textarea>
-    </label>
-    <div class="count" id="c-count"></div>
-
-    <div class="dlg-foot">
-      <button class="btn wide" id="c-copy">Copier &amp; envoyer</button>
-      <button class="btn ghost" id="c-open">Ouvrir</button>
-    </div>
-    <p class="hint">Copier archive le message, marque la personne comme contactée et lance le rappel de relance à J+7.</p>
-
-    <details id="c-hist-wrap" hidden>
-      <summary class="lbl" style="cursor:pointer;padding:6px 0">Messages déjà envoyés</summary>
-      <div id="c-hist"></div>
-    </details>
-
-    <hr class="rule">
+    <div class="links" id="c-links"></div>
 
     <label class="field">
       <span>Note</span>
-      <textarea id="c-note" placeholder="ce qu'il faut se rappeler après l'échange"></textarea>
+      <textarea id="c-note" rows="3" placeholder="ce qu'il faut se rappeler"></textarea>
     </label>
+
     <div class="dlg-foot">
-      <button class="btn ghost sm" id="c-edit">Modifier la fiche</button>
+      <button class="btn ghost sm" id="c-edit">Modifier</button>
       <button class="btn ghost sm danger" id="c-del">Supprimer</button>
     </div>
   </div>
@@ -479,42 +450,16 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
   </div>
 </dialog>
 
-<!-- brief de secours, si le presse-papier est refusé -->
-<dialog id="dlg-brief">
-  <div class="sheet-box">
-    <div class="dlg-head">
-      <div>
-        <h3>Le brief</h3>
-        <div class="meta">Le presse-papier a été refusé. Sélectionne ce texte et copie-le à la main.</div>
-      </div>
-      <button class="iconbtn" data-close aria-label="Fermer">✕</button>
-    </div>
-    <textarea id="b-text" rows="12" readonly></textarea>
-    <div class="dlg-foot">
-      <button class="btn wide" id="b-copy">Réessayer la copie</button>
-      <button class="btn ghost" data-close>Fermer</button>
-    </div>
-  </div>
-</dialog>
-
 <!-- réglages -->
 <dialog id="dlg-settings">
   <form method="dialog" class="sheet-box" id="form-settings">
     <div class="dlg-head">
       <div>
-        <h3>Toi</h3>
-        <div class="meta">Sert à remplir les messages automatiquement.</div>
+        <h3>Réglages</h3>
       </div>
       <button class="iconbtn" type="button" data-close aria-label="Fermer">✕</button>
     </div>
-    <label class="field"><span>Ton prénom et nom</span><input type="text" id="s-name" placeholder="Ali El Belghiti"></label>
-    <label class="field"><span>Qui tu es, en une ligne</span><input type="text" id="s-pitch" placeholder="jeune diplômé, je cherche un premier CDI en gestion de projet"></label>
-    <label class="field"><span>Ce que tu demandes</span><input type="text" id="s-ask" placeholder="15 minutes pour comprendre votre métier"></label>
     <label class="field"><span>Objectif</span><input type="text" id="s-goal" inputmode="numeric" placeholder="30"></label>
-    <hr class="rule">
-    <label class="field"><span>Nom de mon skill Claude</span><input type="text" id="s-skill" placeholder="message-networking"></label>
-    <p class="hint">Le brief demandera à Claude d'utiliser ce skill. Laisse vide tant que tu ne l'as pas créé — le brief se débrouille sans.</p>
-    <label class="field"><span>Ma façon d'écrire (si pas de skill)</span><textarea id="s-voice" placeholder="phrases courtes, pas de superlatifs, je vouvoie, je ne dis jamais « passionné » ni « opportunité »"></textarea></label>
     <div class="dlg-foot">
       <button class="btn wide" type="submit">Enregistrer</button>
       <button class="btn ghost" type="button" data-close>Annuler</button>
@@ -538,7 +483,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2221";
+var APP_VERSION = "20260820-2241";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{name:"",pitch:"",ask:"",skill:"",voice:""}, goal:30, contacts:[], updatedAt:0 };
@@ -736,7 +681,7 @@ function renderMission(){
     head.appendChild(el("div","who", fullName(c)));
     head.appendChild(el("div","meta", subtitle(c)));
     var acts = el("div","row-actions");
-    var b1 = el("button","btn wide","Écrire");
+    var b1 = el("button","btn wide","Ouvrir");
     b1.onclick = function(){ openContact(c.id); };
     var b2 = el("button","btn ghost","Déjà fait");
     b2.onclick = function(){ advance(c.id); };
@@ -837,181 +782,6 @@ function advance(id){
   toast(msgs[Math.floor(Math.random()*msgs.length)]);
 }
 
-/* ============ messages ============ */
-function meName(){ return (state.me.name||"").trim(); }
-function meFirst(){ return meName().split(" ")[0] || ""; }
-function pitchRaw(){ return (state.me.pitch||"").trim() || "je suis jeune diplômé et je cherche un premier CDI"; }
-function pitch(){ var p = pitchRaw(); return p.charAt(0).toUpperCase()+p.slice(1); }
-function ask(){ return (state.me.ask||"").trim() || "15 minutes pour comprendre votre métier"; }
-function sign(){ return meName() || "[ton nom — à remplir dans ⚙]"; }
-function cap(t){ t = (t||"").trim(); return t ? t.charAt(0).toUpperCase()+t.slice(1) : ""; }
-function dot(t){ t = (t||"").trim(); return t ? (/[.!?…]$/.test(t) ? t : t+".") : ""; }
-
-var CHANNELS = [
-  {k:"li",   t:"LinkedIn", limit:300},
-  {k:"mail", t:"Mail",     limit:0},
-  {k:"wa",   t:"WhatsApp", limit:0}
-];
-var MOMENTS = [
-  {k:"first",  t:"1er message"},
-  {k:"nudge1", t:"Relance 1"},
-  {k:"nudge2", t:"Relance 2"},
-  {k:"answer", t:"Sa réponse"},
-  {k:"thanks", t:"Après le call"}
-];
-function channelLabel(k){ for(var i=0;i<CHANNELS.length;i++) if(CHANNELS[i].k===k) return CHANNELS[i].t; return "LinkedIn"; }
-function momentLabel(k){ for(var i=0;i<MOMENTS.length;i++) if(MOMENTS[i].k===k) return MOMENTS[i].t; return "1er message"; }
-function channelLimit(k){ for(var i=0;i<CHANNELS.length;i++) if(CHANNELS[i].k===k) return CHANNELS[i].limit; return 0; }
-
-/* le moment logique, déduit de l'état réel du contact */
-function suggestMoment(c){
-  var k = view(c).k;
-  if(k==="call") return "thanks";
-  if(k==="replied") return "answer";
-  if(k==="followed" || k==="covered") return "nudge2";
-  if(k==="sent" || k==="due") return "nudge1";
-  return "first";
-}
-function suggestChannel(c){
-  if(c.channel) return c.channel;
-  if(c.linkedin) return "li";
-  if(c.email) return "mail";
-  if(c.phone) return "wa";
-  return "li";
-}
-
-/* corps du message par moment, décliné par canal */
-function messageCore(c, channel, moment){
-  var first = c.first || "";
-  var at = c.company ? " chez "+c.company : "";
-  var hook = (c.hook||"").trim();
-  var court = (channel==="li" || channel==="wa");
-
-  if(moment==="first"){
-    var l = [];
-    l.push(pitch()+".");
-    if(hook) l.push(dot(cap(hook)));
-    if(!court) l.push("Je ne cherche pas à vous vendre quoi que ce soit : je voudrais "+ask()+", pour comprendre comment on arrive à un poste comme le vôtre"+at+".");
-    l.push(court ? "Auriez-vous "+ask()+" ?" : "Si vous avez un créneau dans les deux prochaines semaines, je m'adapte à votre agenda.");
-    return l;
-  }
-  if(moment==="nudge1"){
-    var when = c.sentAt ? " du "+shortDate(c.sentAt) : "";
-    return [
-      "Je me permets de revenir vers vous : mon message"+when+" est peut-être passé sous la pile.",
-      "Ma demande tient en une ligne — "+ask()+".",
-      "Si ce n'est pas le bon moment, dites-le moi simplement, je n'insisterai pas."
-    ];
-  }
-  if(moment==="nudge2"){
-    return [
-      "Dernier message de ma part, promis.",
-      "Ma proposition tient toujours : "+ask()+", quand ça vous arrange.",
-      "Sans réponse je ne reviendrai pas vers vous, et ce sera très bien comme ça — merci d'avoir lu."
-    ];
-  }
-  if(moment==="answer"){
-    return [
-      "Merci beaucoup pour votre retour, ça me touche que vous ayez pris le temps.",
-      hook ? dot(cap(hook)) : "",
-      "Je suis disponible quand vous voulez — dites-moi le créneau qui vous arrange et je m'adapte."
-    ];
-  }
-  return [
-    "Merci pour l'échange"+(c.callAt?" de "+shortDate(c.callAt):"")+", j'en sors avec beaucoup plus clair en tête.",
-    "Je retiens surtout ce que vous m'avez dit sur votre métier — ça change ma façon de chercher.",
-    "Je vous tiens au courant de la suite. Et si un jour je peux vous être utile, n'hésitez pas."
-  ];
-}
-
-function buildMessage(c, channel, moment){
-  var first = c.first || "";
-  var core = messageCore(c, channel, moment).filter(function(x){ return x; });
-
-  if(channel==="wa"){
-    var wa = ["Bonjour "+first+","].concat(core);
-    if(meFirst()) wa.push(meFirst());
-    return wa.join("\n\n");
-  }
-  if(channel==="li"){
-    var li = ["Bonjour "+first+","].concat(core);
-    li.push(meFirst() ? "Merci beaucoup, "+meFirst() : "Merci beaucoup");
-    return li.join("\n\n");
-  }
-  var objets = {
-    first:  cap(ask())+(c.company?" — "+c.company:""),
-    nudge1: "Relance — "+ask(),
-    nudge2: "Dernier message — "+ask(),
-    answer: "Merci pour votre retour",
-    thanks: "Merci pour votre temps"
-  };
-  return ["Objet : "+objets[moment], "", "Bonjour "+first+",", ""]
-    .concat(core.join("\n\n").split("\n"))
-    .concat(["", "Bonne journée,", sign()])
-    .join("\n");
-}
-
-/* ============ le brief pour Claude ============ */
-var CHANNEL_RULES = {
-  li:   "LinkedIn, en note d'invitation : 300 caractères maximum, tout compris. Pas de formule de politesse longue, pas de signature — le profil dit déjà qui j'écris.",
-  mail: "Mail : commence par une ligne \"Objet : …\" puis le corps. Vouvoiement, ton professionnel mais vivant, 150 mots maximum, signature à mon prénom et nom.",
-  wa:   "WhatsApp : ton direct et court, 2 à 4 phrases, pas de formule d'ouverture guindée ni de signature. On écrit comme on parle, sans être familier pour autant."
-};
-function momentBrief(c){
-  var m = {
-    first:  "C'est le tout premier contact, cette personne ne me connaît pas.",
-    nudge1: "C'est une première relance"+(c.sentAt ? " : je lui ai écrit le "+shortDate(c.sentAt)+", soit il y a "+daysSince(c.sentAt)+" jours, et je n'ai pas eu de réponse." : ", sans réponse au premier message.")+" Ne pas culpabiliser la personne, rester léger et lui donner une porte de sortie.",
-    nudge2: "C'est la dernière relance"+(c.followedAt ? ", après une première relance le "+shortDate(c.followedAt)+"." : ".")+" Je dis explicitement que c'est mon dernier message et je referme proprement, sans reproche.",
-    answer: "Cette personne m'a répondu"+(c.repliedAt ? " le "+shortDate(c.repliedAt) : "")+". J'écris la réponse à sa réponse : remercier, rebondir, et proposer un créneau sans insister.",
-    thanks: "Je viens d'avoir un échange avec cette personne"+(c.callAt ? " le "+shortDate(c.callAt) : "")+". J'écris le message de remerciement d'après : sincère, court, sans redemander quoi que ce soit."
-  };
-  return m[c.__moment] || m.first;
-}
-function buildBrief(c, channel, moment){
-  c.__moment = moment;
-  var L = [];
-  var skill = (state.me.skill||"").trim();
-
-  L.push(skill
-    ? "Utilise le skill "+skill+" pour me rédiger le message ci-dessous."
-    : "Rédige-moi le message de networking décrit ci-dessous, dans un français naturel et sans formules toutes faites.");
-  L.push("");
-  L.push("## Qui je suis");
-  L.push("- Nom : "+(meName()||"(non renseigné)"));
-  L.push("- En une ligne : "+pitchRaw());
-  L.push("- Ce que je demande : "+ask());
-  var voice = (state.me.voice||"").trim();
-  if(voice){ L.push("- Ma façon d'écrire : "+voice); }
-  L.push("");
-  L.push("## À qui j'écris");
-  L.push("- "+fullName(c)+(c.role?" — "+c.role:"")+(c.company?" ("+c.company+")":""));
-  if(c.hook)  L.push("- Ce que j'ai repéré chez elle : "+c.hook);
-  if(c.note)  L.push("- Mes notes : "+c.note);
-  if(c.linkedin) L.push("- Son profil : "+c.linkedin);
-  L.push("");
-  L.push("## Le canal");
-  L.push(CHANNEL_RULES[channel] || CHANNEL_RULES.li);
-  L.push("");
-  L.push("## Où on en est");
-  L.push(momentBrief(c));
-  delete c.__moment;
-
-  var hist = (c.messages||[]);
-  if(hist.length){
-    L.push("");
-    L.push("## Ce que je lui ai déjà écrit — ne pas me répéter");
-    hist.slice(-3).forEach(function(m){
-      L.push("");
-      L.push("["+shortDate(m.at)+" · "+channelLabel(m.channel)+" · "+momentLabel(m.kind)+"]");
-      L.push(m.text);
-    });
-  }
-  L.push("");
-  L.push("## Ce que j'attends de toi");
-  L.push("Donne-moi uniquement le message, prêt à copier-coller — pas d'explication, pas de commentaire, pas de variantes. Si quelque chose te manque pour le rendre vraiment personnel, pose-moi la question avant d'écrire.");
-  return L.join("\n");
-}
-
 /* ---- ce qu'on colle depuis un téléphone est rarement propre ---- */
 function tidyUrl(raw){
   var u = String(raw||"").trim().replace(/\s+/g,"");
@@ -1076,177 +846,62 @@ function waNumber(raw){
 
 /* ============ fiche contact ============ */
 var dlgC = $("#dlg-contact");
-var chan = "li", moment = "first", dirty = false;
 
 function openContact(id){
-  current = id; dirty = false;
-  var c = byId(id); if(!c) return;
-  chan = suggestChannel(c);
-  moment = c.kind || suggestMoment(c);
-  buildPickers();
-  fillContact(true);
+  current = id;
+  if(!byId(id)) return;
+  fillContact();
   dlgC.showModal();
 }
-function buildPickers(){
-  var ch = $("#c-chan"), mo = $("#c-moment");
-  if(ch.children.length) return;              // construits une seule fois
-  CHANNELS.forEach(function(x){
-    var b = el("button","step",x.t); b.dataset.c = x.k; ch.appendChild(b);
-  });
-  MOMENTS.forEach(function(x){
-    var b = el("button","step",x.t); b.dataset.m = x.k; mo.appendChild(b);
-  });
+/* dernière trace d'échange, quelle qu'elle soit */
+function lastTouch(c){
+  return Math.max(c.callAt||0, c.repliedAt||0, c.followedAt||0, c.sentAt||0);
 }
-function pressed(box, attr, val){
-  Array.prototype.forEach.call(box.children, function(b){
-    b.setAttribute("aria-pressed", String(b.dataset[attr]===val));
-  });
-}
-function updateCount(){
-  var txt = $("#c-msg").value || "";
-  var lim = channelLimit(chan);
-  var cnt = $("#c-count");
-  if(lim){
-    cnt.textContent = txt.length+" / "+lim+" caractères (limite d'une invitation LinkedIn)";
-    cnt.className = "count" + (txt.length>lim ? " over" : "");
-  } else {
-    cnt.textContent = txt.length+" caractères";
-    cnt.className = "count";
-  }
-}
-function renderHistory(c){
-  var wrap = $("#c-hist-wrap"), box = $("#c-hist");
-  var hist = c.messages||[];
-  wrap.hidden = !hist.length;
-  box.innerHTML = "";
-  if(!hist.length) return;
-  wrap.querySelector("summary").textContent = hist.length+" message"+(hist.length>1?"s":"")+" déjà envoyé"+(hist.length>1?"s":"");
-  hist.slice().reverse().forEach(function(m){
-    var d = el("div");
-    d.style.cssText = "margin:10px 0 0";
-    d.appendChild(el("div","lbl", shortDate(m.at)+" · "+channelLabel(m.channel)+" · "+momentLabel(m.kind)));
-    var t = el("div","msgbox", m.text);
-    t.style.marginTop = "4px";
-    d.appendChild(t);
-    box.appendChild(d);
-  });
-}
-/* replace=true : on réécrit le brouillon depuis le modèle */
-function fillContact(replace){
+function fillContact(){
   var c = byId(current); if(!c) return;
+  var v = view(c), t = lastTouch(c);
   $("#c-name").textContent = fullName(c);
-  $("#c-meta").textContent = subtitle(c) + (c.sentAt ? " — envoyé "+humanAge(c.sentAt) : "");
-  pressed($("#c-steps"), "s", c.status);
-  pressed($("#c-chan"), "c", chan);
-  pressed($("#c-moment"), "m", moment);
-  $("#c-hook").value = c.hook||"";
+
+  var meta = [];
+  if(subtitle(c)) meta.push(subtitle(c));
+  meta.push(t ? v.label+" · "+humanAge(t) : v.label);
+  $("#c-meta").textContent = meta.join(" — ");
+
+  Array.prototype.forEach.call($("#c-steps").children, function(b){
+    b.setAttribute("aria-pressed", String(b.dataset.s===c.status));
+  });
   $("#c-note").value = c.note||"";
-  if(replace || !dirty){ $("#c-msg").value = buildMessage(c, chan, moment); }
-  updateCount();
-  renderHistory(c);
-  var manque = [];
-  if(!c.linkedin) manque.push("le profil LinkedIn");
-  if(!c.email) manque.push("l'email");
-  if(!c.company) manque.push("l'entreprise");
-  if(!c.role) manque.push("le poste");
-  var mb = $("#c-missing");
-  if(manque.length){
-    mb.hidden = false;
-    mb.innerHTML = "Il manque "+manque.join(", ")+". <b>Compléter →</b>";
-  } else { mb.hidden = true; }
-  $("#c-open").textContent = chan==="mail" ? "Écrire le mail" : (chan==="wa" ? "Ouvrir WhatsApp" : "Ouvrir LinkedIn");
-  $("#c-claude-hint").textContent = (state.me.skill||"").trim()
-    ? "Le brief appelle ton skill « "+state.me.skill.trim()+" ». Tu colles dans Claude, il rédige, tu reviens coller sa réponse ici."
-    : "Prépare tout le contexte, le copie et ouvre Claude. Tu colles, il rédige, tu reviens coller sa réponse ici.";
+  renderLinks(c);
+}
+/* un lien par moyen de contact disponible, rien d'autre */
+function renderLinks(c){
+  var box = $("#c-links"); box.innerHTML = "";
+  var faits = [];
+  if(c.linkedin) faits.push({t:"Profil LinkedIn", u:c.linkedin, ext:true});
+  if(c.email)    faits.push({t:c.email, u:"mailto:"+c.email, ext:false});
+  if(c.phone)    faits.push({t:"WhatsApp", u:"https://wa.me/"+waNumber(c.phone), ext:true});
+
+  faits.forEach(function(f){
+    var a = document.createElement("a");
+    a.className = "linkrow"; a.href = f.u; a.textContent = f.t;
+    if(f.ext){ a.target = "_blank"; a.rel = "noopener"; }
+    box.appendChild(a);
+  });
+  if(!faits.length){
+    var b = el("button","linkrow add","Aucun moyen de le contacter — ajouter");
+    b.onclick = function(){ openEdit(current); };
+    box.appendChild(b);
+  }
 }
 $("#c-steps").addEventListener("click", function(e){
   var b = e.target.closest("[data-s]"); if(!b) return;
   var c = byId(current); if(!c) return;
-  setStatus(c, b.dataset.s); save();
-  moment = suggestMoment(c);
-  fillContact(!dirty); render();
+  setStatus(c, b.dataset.s); save(); fillContact(); render();
   toast("Statut : "+view(c).label.toLowerCase());
-});
-$("#c-chan").addEventListener("click", function(e){
-  var b = e.target.closest("[data-c]"); if(!b) return;
-  var c = byId(current); if(!c) return;
-  chan = b.dataset.c; c.channel = chan; save();
-  fillContact(!dirty);
-});
-$("#c-moment").addEventListener("click", function(e){
-  var b = e.target.closest("[data-m]"); if(!b) return;
-  var c = byId(current); if(!c) return;
-  moment = b.dataset.m; c.kind = moment; save();
-  fillContact(!dirty);
-});
-$("#c-msg").addEventListener("input", function(){ dirty = true; updateCount(); });
-$("#c-tpl").addEventListener("click", function(){
-  var c = byId(current); if(!c) return;
-  dirty = false; fillContact(true);
-  toast("Modèle rechargé.");
-});
-$("#c-claude").addEventListener("click", function(){
-  var c = byId(current); if(!c) return;
-  var brief = buildBrief(c, chan, moment);
-  var pending = copy(brief);                                   // lancé pendant le geste
-  window.open("https://claude.ai/new", "_blank", "noopener");   // idem, sinon le popup est bloqué
-  pending.then(function(ok){
-    if(ok){ toast("Brief copié — colle-le dans Claude."); return; }
-    $("#b-text").value = brief;                                 // secours : à sélectionner à la main
-    $("#dlg-brief").showModal();
-  });
-});
-$("#b-copy").addEventListener("click", function(){
-  var t = $("#b-text");
-  t.focus(); t.select();
-  copy(t.value).then(function(ok){ toast(ok ? "Brief copié." : "Copie refusée — garde le texte sélectionné et fais Copier."); });
-});
-$("#c-hook").addEventListener("input", function(){
-  var c = byId(current); if(!c) return;
-  c.hook = this.value; save();
-  if(!dirty){ $("#c-msg").value = buildMessage(c, chan, moment); updateCount(); }
 });
 $("#c-note").addEventListener("input", function(){
   var c = byId(current); if(!c) return;
   c.note = this.value; save();
-});
-$("#c-copy").addEventListener("click", function(){
-  var c = byId(current); if(!c) return;
-  var msg = ($("#c-msg").value||"").trim();
-  if(!msg){ toast("Le message est vide."); return; }
-  copy(msg).then(function(ok){
-    c.messages = c.messages || [];
-    c.messages.push({at:Date.now(), channel:chan, kind:moment, text:msg});
-    c.channel = chan;
-    var moved = "";
-    if(moment==="nudge1" && c.status==="sent"){ setStatus(c,"followed"); moved = " Marqué relancé."; }
-    else if(moment==="nudge2" && (c.status==="sent"||c.status==="followed")){ setStatus(c,"followed"); moved = " Relance archivée."; }
-    else if(c.status==="todo"){ setStatus(c,"sent"); moved = " Marqué envoyé — relance prévue dans 7 jours."; }
-    dirty = false;
-    save(); render(); fillContact(true);
-    toast((ok ? "Copié." : "Copie impossible, sélectionne le texte.") + moved);
-  });
-});
-$("#c-open").addEventListener("click", function(){
-  var c = byId(current); if(!c) return;
-  if(chan==="wa"){
-    var num = waNumber(c.phone);
-    if(!num){ toast("Pas de numéro sur cette fiche — ajoute-le dans « Modifier la fiche »."); return; }
-    window.open("https://wa.me/"+num, "_blank", "noopener");
-    return;
-  }
-  if(chan==="mail"){
-    if(!c.email){ toast("Pas d'email sur cette fiche."); return; }
-    var m = ($("#c-msg").value||"").trim();
-    var lines = m.split("\n");
-    var hasSubj = lines[0].indexOf("Objet : ")===0;
-    var subj = hasSubj ? lines[0].slice(8) : ask();
-    var body = hasSubj ? lines.slice(2).join("\n") : m;
-    window.location.href = "mailto:"+encodeURIComponent(c.email)+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
-    return;
-  }
-  if(c.linkedin){ window.open(c.linkedin, "_blank", "noopener"); return; }
-  toast("Pas de lien LinkedIn sur cette fiche.");
 });
 $("#c-del").addEventListener("click", function(){
   var c = byId(current); if(!c) return;
@@ -1255,7 +910,6 @@ $("#c-del").addEventListener("click", function(){
   save(); render(); dlgC.close(); toast("Supprimé.");
 });
 $("#c-edit").addEventListener("click", function(){ openEdit(current); });
-$("#c-missing").addEventListener("click", function(){ openEdit(current); });
 
 /* ============ ajout / édition ============ */
 var dlgE = $("#dlg-edit");
@@ -1338,19 +992,10 @@ function newContact(d){
 /* ============ réglages ============ */
 var dlgS = $("#dlg-settings");
 $("#btn-settings").addEventListener("click", function(){
-  $("#s-name").value = state.me.name||"";
-  $("#s-pitch").value = state.me.pitch||"";
-  $("#s-ask").value = state.me.ask||"";
   $("#s-goal").value = state.goal;
-  $("#s-skill").value = state.me.skill||"";
-  $("#s-voice").value = state.me.voice||"";
   dlgS.showModal();
 });
 $("#form-settings").addEventListener("submit", function(){
-  state.me = {
-    name:$("#s-name").value.trim(), pitch:$("#s-pitch").value.trim(), ask:$("#s-ask").value.trim(),
-    skill:$("#s-skill").value.trim(), voice:$("#s-voice").value.trim()
-  };
   var g = parseInt($("#s-goal").value,10);
   state.goal = (g && g>0 && g<1000) ? g : 30;
   save(); render();
@@ -1586,6 +1231,10 @@ function normalize(s){
   s.contacts = s.contacts.map(function(c){
     var n = Object.assign(newContact({}), c);
     if(!Array.isArray(n.messages)) n.messages = [];
+    if(n.hook){                                   // l'accroche n'a plus d'écran à elle
+      n.note = n.note ? n.hook+"\n"+n.note : n.hook;
+      n.hook = "";
+    }
     return n;
   });
   return s;
@@ -1597,6 +1246,15 @@ function load(){
   render();
   setSave(lsOk ? (local ? "saved" : "") : "none");
 }
+
+/* la barre du bas ne doit jamais recouvrir la fin de la page */
+function fitDock(){
+  var d = document.querySelector(".dock");
+  if(d) document.documentElement.style.setProperty("--dock-h", (d.offsetHeight + 28) + "px");
+}
+fitDock();
+window.addEventListener("resize", fitDock);
+if(window.ResizeObserver) new ResizeObserver(fitDock).observe(document.querySelector(".dock"));
 
 load();
 checkUpdate();
