@@ -277,6 +277,32 @@ table.preview th,table.preview td{text-align:left; padding:5px 7px; border-botto
 table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
 .scrollx{overflow-x:auto}
 
+/* ---------- rangs & entreprises ---------- */
+.pill.invited{border-color:var(--rule-strong); color:var(--ink-soft)}
+.pill.talking{border-color:var(--go); color:var(--go); background:var(--go-soft)}
+.pill.sourcing{border-style:dashed; border-color:var(--rule-strong); color:var(--ink-faint)}
+.pill.sleep{border-color:var(--rule-strong); color:var(--ink-faint)}
+.slots{display:flex; gap:4px; margin-top:6px}
+.slot{width:24px; height:5px; border-radius:2px; background:var(--rule-strong); opacity:.4}
+.slot.on{opacity:1; background:var(--ink)}
+.slot.set{opacity:.6; background:var(--ink-faint)}
+.slot.done{opacity:.85; background:var(--rule-strong)}
+.slot.win{opacity:1; background:var(--go)}
+.env .doing{font-size:14px; color:var(--ink); line-height:1.45}
+.env .doing b{font-weight:600}
+.row-actions{flex-wrap:wrap}
+.row-actions .btn{flex:1 1 auto}
+.tag{font-family:var(--f-data); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); border:1px solid var(--rule); border-radius:999px; padding:1px 6px; margin-left:6px; white-space:nowrap}
+.slotrow{display:flex; align-items:center; gap:10px; width:100%; text-align:left; font:inherit; background:transparent; border:0; border-bottom:1px solid var(--rule); padding:12px 13px; min-height:54px; color:var(--ink)}
+.slotrow:last-child{border-bottom:0}
+.slotrow:hover{background:var(--card-2)}
+.slotrow .rk{font-family:var(--f-data); font-size:11px; color:var(--ink-faint); width:20px; flex:none}
+.slotrow .bd{flex:1; min-width:0}
+.slotrow .bd b{display:block; font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.slotrow .bd span{font-size:12.5px; color:var(--ink-soft)}
+.slotrow.vide .bd b{font-weight:500; color:var(--ink-soft)}
+.slotrow .go{color:var(--ink-faint); font-size:19px; flex:none}
+
 /* ---------- toast ---------- */
 #toast{
   position:fixed; left:50%; bottom:84px; transform:translate(-50%,14px); z-index:20;
@@ -298,7 +324,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
   <header class="masthead">
     <div>
       <h1>Objectif 30</h1>
-      <p>Trente personnes à contacter. Le score compte les envois, jamais les réponses.</p>
+      <p>Trente entreprises, une conversation dans chacune. Une personne à la fois — le score compte les envois, jamais les réponses.</p>
     </div>
     <button class="iconbtn" id="btn-settings" title="Réglages" aria-label="Réglages">⚙</button>
   </header>
@@ -310,9 +336,9 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
         <span id="streak-l">JOUR</span>
       </div>
       <div class="meter-stats">
-        <div class="stat"><span class="lbl">Contactés</span><b class="num" id="st-sent">0<span style="font-size:15px;color:var(--ink-faint)">/30</span></b></div>
+        <div class="stat"><span class="lbl">Entreprises</span><b class="num" id="st-sent">0<span style="font-size:15px;color:var(--ink-faint)">/30</span></b></div>
         <div class="stat hot"><span class="lbl">Tentatives</span><b class="num" id="st-tries">0</b></div>
-        <div class="stat good"><span class="lbl">Réponses</span><b class="num" id="st-replies">0</b></div>
+        <div class="stat good"><span class="lbl">Conversations</span><b class="num" id="st-replies">0</b></div>
         <div class="stat"><span class="lbl">Calls</span><b class="num" id="st-calls">0</b></div>
       </div>
     </div>
@@ -337,10 +363,10 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
     </div>
     <div class="chips" id="filters">
       <button class="chip" data-f="all" aria-pressed="true">Tout</button>
-      <button class="chip" data-f="todo" aria-pressed="false">À contacter</button>
-      <button class="chip" data-f="waiting" aria-pressed="false">En attente</button>
-      <button class="chip" data-f="replied" aria-pressed="false">Réponses</button>
-      <button class="chip" data-f="covered" aria-pressed="false">Terrain couvert</button>
+      <button class="chip" data-f="sourcing" aria-pressed="false">À sourcer</button>
+      <button class="chip" data-f="cours" aria-pressed="false">En cours</button>
+      <button class="chip" data-f="conversation" aria-pressed="false">Conversations</button>
+      <button class="chip" data-f="sommeil" aria-pressed="false">Sommeil</button>
     </div>
     <div class="list" id="list"></div>
   </section>
@@ -351,13 +377,49 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
   <div class="dock-in">
     <span class="savechip"><span id="savechip"></span> <span id="syncchip"></span></span>
     <div class="dock-row">
-      <button class="btn" id="btn-add">+ Ajouter</button>
-      <button class="btn ghost" id="btn-import">Importer CSV</button>
+      <button class="btn" id="btn-boite">+ Entreprise</button>
+      <button class="btn ghost" id="btn-add">+ Personne</button>
     </div>
   </div>
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<!-- fiche entreprise -->
+<dialog id="dlg-company">
+  <div class="sheet-box">
+    <div class="dlg-head">
+      <div>
+        <h3 id="k-name">—</h3>
+        <div class="meta" id="k-meta"></div>
+      </div>
+      <button class="iconbtn" data-close aria-label="Fermer">✕</button>
+    </div>
+    <p class="hint" id="k-consigne"></p>
+    <div class="links" id="k-slots"></div>
+    <div class="dlg-foot">
+      <button class="btn ghost sm" id="k-search">Chercher sur LinkedIn</button>
+      <button class="btn ghost sm" id="k-sleep">Mettre en sommeil</button>
+      <button class="btn ghost sm danger" id="k-del" hidden>Supprimer</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- nouvelle entreprise -->
+<dialog id="dlg-boite">
+  <form method="dialog" class="sheet-box" id="form-boite">
+    <div class="dlg-head">
+      <h3>Nouvelle entreprise</h3>
+      <button class="iconbtn" type="button" data-close aria-label="Fermer">✕</button>
+    </div>
+    <label class="field"><span>Nom de l'entreprise</span><input type="text" id="b-nom" placeholder="Alan"></label>
+    <p class="hint">Tu la cibles maintenant, tu trouveras les personnes après : l'app te réclamera un booster, puis un décideur, puis une route alternative.</p>
+    <div class="dlg-foot">
+      <button class="btn wide" type="submit">Ajouter</button>
+      <button class="btn ghost" type="button" data-close>Annuler</button>
+    </div>
+  </form>
+</dialog>
 
 <!-- fiche contact -->
 <dialog id="dlg-contact">
@@ -372,7 +434,8 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 
     <div class="steps all" id="c-steps">
       <button class="step" data-s="todo">À contacter</button>
-      <button class="step" data-s="sent">Envoyé</button>
+      <button class="step" data-s="invited">Invité</button>
+      <button class="step" data-s="sent">Message</button>
       <button class="step" data-s="followed">Relancé</button>
       <button class="step" data-s="replied">Réponse</button>
       <button class="step" data-s="call">Call</button>
@@ -407,6 +470,15 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
     </div>
     <label class="field"><span>Entreprise</span><input type="text" id="e-company"></label>
     <label class="field"><span>Poste</span><input type="text" id="e-role"></label>
+    <div>
+      <span class="lbl" style="display:block;margin-bottom:6px">Rang dans l'entreprise</span>
+      <div class="steps all" id="e-tier">
+        <button class="step" type="button" data-t="p1">P1 booster</button>
+        <button class="step" type="button" data-t="p2">P2 décideur</button>
+        <button class="step" type="button" data-t="p3">P3 alternative</button>
+      </div>
+      <p class="hint" id="e-tier-hint" style="margin-top:6px"></p>
+    </div>
     <label class="field"><span>Profil LinkedIn</span><input type="text" id="e-linkedin" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="linkedin.com/in/… — colle, peu importe la forme"></label>
     <label class="field"><span>Email</span><input type="text" id="e-email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
     <label class="field"><span>Téléphone (pour WhatsApp)</span><input type="text" id="e-phone" inputmode="tel" placeholder="06 12 34 56 78"></label>
@@ -470,6 +542,11 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 
     <hr class="rule">
     <div>
+      <span class="lbl" style="display:block;margin-bottom:6px">Reprendre une base existante</span>
+      <button class="btn ghost sm" type="button" id="s-import">Importer un CSV</button>
+    </div>
+    <hr class="rule">
+    <div>
       <span class="lbl" style="display:block;margin-bottom:6px">Sauvegarde</span>
       <div class="dlg-foot">
         <button class="btn ghost sm" type="button" id="s-export">Télécharger une copie</button>
@@ -488,12 +565,13 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260820-2347";
+var APP_VERSION = "20260822-2325";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
-var state = { v:1, me:{}, goal:30, contacts:[], deleted:[], sync:{token:"",gistId:""}, updatedAt:0 };
+var state = { v:1, me:{}, goal:30, contacts:[], boites:[], deleted:[], boitesSupp:[], sync:{token:"",gistId:""}, updatedAt:0 };
 var filter = "all";
-var current = null;      // id de la fiche ouverte
+var current = null;      // id de la fiche contact ouverte
+var courante = null;     // clé de l'entreprise ouverte
 var tpl = "li";
 var editing = null;      // id en cours d'édition, ou null pour un ajout
 var pending = null;      // import en attente
@@ -522,29 +600,190 @@ function shortDate(ts){
   return new Date(ts).toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
 }
 
-/* ============ lecture du statut ============ */
+/* ============ le calendrier du funnel ============ */
+/* J0 invitation · J2-3 premier message · J6-7 changement de canal · J9-10 dernière relance */
+var J_MESSAGE = 2;      // on laisse 2 jours à la demande de connexion
+var J_RELANCE = 6;      // relance sur l'autre canal
+var J_DERNIERE = 3;     // dernière tentative, après la relance
+var J_CLOTURE = 2;      // après la dernière relance, la séquence se ferme seule
+var J_SUIVANT = 1;      // on souffle un jour avant d'attaquer le contact suivant
+var J_SOMMEIL = 28;     // 3 à 4 semaines sans rien : l'entreprise dort
+var J_REVEIL = 30;      // 4 à 6 semaines de sommeil avant de retenter
+var J_CONV = 14;        // au-delà, une réponse ne squatte plus la mission du jour
+
+var TIERS = ["p1","p2","p3"];
+var TIER_NOM = {p1:"P1 booster", p2:"P2 décideur", p3:"P3 route alternative"};
+var TIER_QUI = {
+  p1:"quelqu'un proche du poste, 1 à 5 ans d'expérience — il répondra plus facilement",
+  p2:"le manager de l'équipe, ton N+1 possible, celui qui peut créer une opportunité",
+  p3:"une équipe voisine, un alumni, un recruteur spécialisé"
+};
+
+/* ============ lecture du statut d'une personne ============ */
 function view(c){
   if(c.status==="call")    return {k:"call",    label:"Call / RDV"};
   if(c.status==="replied") return {k:"replied", label:"Réponse"};
-  if(c.closed)             return {k:"covered", label:"Terrain couvert"};
+  if(c.stoppedAt || c.closed) return {k:"covered", label:"Terrain couvert"};
   if(c.status==="followed"){
-    if(daysSince(c.followedAt) >= 14) return {k:"covered", label:"Terrain couvert"};
+    if(c.lastAt) return daysSince(c.lastAt) >= J_CLOTURE
+      ? {k:"covered", label:"Terrain couvert"}
+      : {k:"followed", label:"Relancé ×2"};
     return {k:"followed", label:"Relancé"};
   }
-  if(c.status==="sent"){
-    var d = daysSince(c.sentAt);
-    if(d >= 21) return {k:"covered", label:"Terrain couvert"};
-    if(d >= 7)  return {k:"due",     label:"Relance due"};
-    return {k:"sent", label:"En attente"};
-  }
+  if(c.status==="sent")    return {k:"sent",    label:"En attente"};
+  if(c.status==="invited") return {k:"invited", label:"Invitation envoyée"};
   return {k:"todo", label:"À contacter"};
 }
-function reached(c){ return c.status!=="todo"; }
+function fini(c){ return view(c).k==="covered"; }
+function finLe(c){
+  if(!fini(c)) return 0;
+  if(c.stoppedAt) return c.stoppedAt;
+  if(c.lastAt) return c.lastAt + J_CLOTURE*DAY;
+  return lastTouch(c) || c.createdAt || 0;
+}
+function enConversation(c){ return c.status==="replied" || c.status==="call"; }
+function reached(c){ return !!(c.actes && c.actes.length); }
+
+/* ============ ce qu'il y a à faire, personne par personne ============ */
+function prochaineAction(c){
+  var k = view(c).k;
+  if(k==="covered" || k==="call") return null;
+  if(k==="replied"){
+    if(daysSince(c.repliedAt) > J_CONV) return null;   // la conversation vit sa vie
+    return {
+      du: c.repliedAt || 0,
+      quoi: "Réponse — enchaîne", dat:false,
+      consigne: "Propose un appel de 10-15 minutes. Pas dispo ? deux ou trois questions par écrit, ou un vocal LinkedIn, font très bien l'affaire.",
+      boutons: [{t:"Call posé", a:"call"}]
+    };
+  }
+  if(k==="todo") return {
+    du: c.createdAt || 0,
+    quoi: "J0 — premier geste", dat:false,
+    consigne: "Passe sur son profil, puis envoie la demande de connexion. Sans note, sauf si tu as vraiment quelque chose de personnel à dire.",
+    boutons: [{t:"Invitation envoyée", a:"invited"}]
+  };
+  if(k==="invited") return {
+    du: (c.invitedAt||0) + J_MESSAGE*DAY,
+    quoi: "J2-3 — premier message", dat:true,
+    consigne: (c.email
+        ? "Si elle a accepté : message LinkedIn maintenant. Sinon : email pro, sans attendre."
+        : "Si elle a accepté : message LinkedIn maintenant. Sinon, sans email connu, la piste s'arrête là.")
+      + " Tu ne demandes pas un job : tu demandes 10-15 minutes pour comprendre le métier.",
+    boutons: c.email
+      ? [{t:"Message LinkedIn envoyé", a:"sent-li"}, {t:"Email envoyé", a:"sent-mail"}]
+      : [{t:"Message LinkedIn envoyé", a:"sent-li"}, {t:"Pas accepté — arrêter", a:"stop"}]
+  };
+  if(k==="sent") return {
+    du: (c.sentAt||0) + J_RELANCE*DAY,
+    quoi: "J6-7 — change de canal", dat:true,
+    consigne: c.channel==="mail"
+      ? "Relance courte par email. Ne répète pas le premier message : rappelle la demande, et rends la réponse facile."
+      : (c.email
+          ? "Passe à l'email. Ne répète pas le message LinkedIn : deux lignes qui rappellent la demande suffisent."
+          : "Pas d'email connu — relance courte sur LinkedIn, ou va chercher son adresse."),
+    boutons: [{t:"Relance envoyée", a:"followed"}]
+  };
+  if(k==="followed"){
+    if(c.lastAt) return null;                          // la séquence se ferme toute seule
+    return {
+      du: (c.followedAt||0) + J_DERNIERE*DAY,
+      quoi: "J9-10 — dernière tentative", dat:true,
+      consigne: "Deux sollicitations, c'est déjà honnête. Une troisième, très courte, seulement si ce contact vaut vraiment le coup.",
+      boutons: [{t:"Dernière relance envoyée", a:"last"}, {t:"Arrêter là", a:"stop"}]
+    };
+  }
+  return null;
+}
+
+/* ============ les entreprises ============ */
+function cleBoite(nom){
+  return String(nom||"").toLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"");
+}
+function boiteDe(cle){
+  for(var i=0;i<state.boites.length;i++) if(state.boites[i].cle===cle) return state.boites[i];
+  return null;
+}
+/* une entreprise existe soit parce qu'on l'a ciblée, soit parce qu'un contact la nomme */
+function entreprises(){
+  var map = {}, ordre = [];
+  function socle(cle, nom, ref){
+    if(!map[cle]){ map[cle] = {cle:cle, nom:nom, gens:[], ref:ref||0}; ordre.push(cle); }
+    return map[cle];
+  }
+  state.boites.forEach(function(b){ socle(b.cle, b.nom, b.createdAt).boite = b; });
+  state.contacts.forEach(function(c){
+    var cle = cleBoite(c.company);
+    var e = cle ? socle(cle, (c.company||"").trim(), c.createdAt)
+                : socle("@"+c.id, fullName(c), c.createdAt);
+    if(!cle) e.solo = true;
+    e.gens.push(c);
+  });
+  return ordre.map(function(cle){ return jauger(map[cle]); }).sort(function(a,b){ return a.ref-b.ref; });
+}
+function jauger(e){
+  e.gens.sort(function(a,b){
+    var d = TIERS.indexOf(a.tier||"p1") - TIERS.indexOf(b.tier||"p1");
+    return d !== 0 ? d : (a.createdAt||0)-(b.createdAt||0);
+  });
+  TIERS.forEach(function(t){ e[t] = null; });
+  e.gens.forEach(function(c){ var t = c.tier||"p1"; if(!e[t]) e[t] = c; });
+
+  e.conv    = e.gens.filter(enConversation)[0] || null;
+  e.actif   = e.conv || e.gens.filter(function(c){ return !fini(c); })[0] || null;
+  e.entamee = e.gens.some(reached);
+  e.finLe   = e.gens.reduce(function(m,c){ return Math.max(m, finLe(c)); }, 0);
+  e.debut   = e.gens.reduce(function(m,c){
+    var t = c.actes && c.actes.length ? c.actes[0] : 0;
+    return t && (!m || t<m) ? t : m;
+  }, 0);
+  e.manque  = TIERS.filter(function(t){ return !e[t]; })[0] || null;
+  e.dort    = (e.boite && e.boite.snoozedAt) || 0;
+
+  if(e.conv)            e.etat = "conversation";
+  else if(e.dort)       e.etat = daysSince(e.dort) >= J_REVEIL ? "reveil" : "sommeil";
+  else if(e.actif)      e.etat = "cours";
+  else if(e.debut && daysSince(e.debut) >= J_SOMMEIL) e.etat = "sommeil";
+  else if(e.manque)     e.etat = "sourcing";
+  else                  e.etat = "sommeil";
+
+  /* quand faut-il aller chercher le contact suivant : un jour après le précédent */
+  e.manqueLe = e.gens.length ? e.finLe + J_SUIVANT*DAY : (e.ref||0);
+  e.reveilLe = e.dort ? e.dort + J_REVEIL*DAY : 0;
+  return e;
+}
+var ETAT_BOITE = {
+  sourcing:     {label:"À sourcer",    pill:"sourcing"},
+  cours:        {label:"En cours",     pill:"sent"},
+  conversation: {label:"Conversation", pill:"talking"},
+  sommeil:      {label:"En sommeil",   pill:"sleep"},
+  reveil:       {label:"À réveiller",  pill:"sleep"}
+};
+
+/* ============ la mission du jour ============ */
+function missions(){
+  var now = Date.now(), out = [];
+  entreprises().forEach(function(e){
+    if(e.etat==="sommeil") return;
+    if(e.etat==="reveil"){ out.push({type:"reveil", e:e, du:e.reveilLe}); return; }
+    if(e.actif){                                  // une seule personne par entreprise, jamais trois
+      var a = prochaineAction(e.actif);
+      if(a) out.push({type:"contact", e:e, c:e.actif, a:a, du:a.du});
+      return;
+    }
+    if(e.manque) out.push({type:"sourcing", e:e, tier:e.manque, du:e.manqueLe});
+  });
+  var poids = {contact:0, sourcing:1, reveil:2};
+  return out.filter(function(m){ return m.du <= now; })
+            .sort(function(a,b){ return (poids[a.type]-poids[b.type]) || (a.du - b.du); });
+}
+
+/* ============ compteurs ============ */
 function actionDays(){
   var set = {};
   state.contacts.forEach(function(c){
-    if(c.sentAt)     set[dayKeyOf(c.sentAt)] = 1;
-    if(c.followedAt) set[dayKeyOf(c.followedAt)] = 1;
+    (c.actes||[]).forEach(function(t){ set[dayKeyOf(t)] = 1; });
   });
   return set;
 }
@@ -570,15 +809,20 @@ function bestStreak(){
   return best;
 }
 function stats(){
-  var s = {sent:0, tries:0, replies:0, calls:0, covered:0, follows:0, today:0};
+  var s = {boites:0, entamees:0, tries:0, replies:0, calls:0, covered:0, follows:0, complets:0, today:0, dodo:0};
   var tk = todayKey();
+  entreprises().forEach(function(e){
+    s.boites++;
+    if(e.entamee) s.entamees++;
+    if(e.conv) s.replies++;
+    if(e.etat==="sommeil" || e.etat==="reveil") s.dodo++;
+  });
   state.contacts.forEach(function(c){
-    if(reached(c)) s.sent++;
-    if(c.sentAt){ s.tries++; if(dayKeyOf(c.sentAt)===tk) s.today++; }
-    if(c.followedAt){ s.tries++; s.follows++; if(dayKeyOf(c.followedAt)===tk) s.today++; }
-    if(c.repliedAt) s.replies++;
+    (c.actes||[]).forEach(function(t){ s.tries++; if(dayKeyOf(t)===tk) s.today++; });
+    if(c.followedAt) s.follows++;
+    if(c.lastAt) s.complets++;
     if(c.callAt) s.calls++;
-    if(view(c).k==="covered") s.covered++;
+    if(fini(c)) s.covered++;
   });
   return s;
 }
@@ -589,31 +833,41 @@ function renderMeter(){
   $("#streak-n").textContent = st.n;
   $("#streak-l").textContent = st.n===0 ? "À ZÉRO" : (st.live ? (st.n>1?"JOURS":"JOUR") : "À SAUVER");
   $("#cachet").className = "cachet" + (st.live && st.n>0 ? "" : " cold");
-  $("#st-sent").innerHTML = s.sent + '<span style="font-size:15px;color:var(--ink-faint)">/'+state.goal+'</span>';
+  $("#st-sent").innerHTML = s.entamees + '<span style="font-size:15px;color:var(--ink-faint)">/'+state.goal+'</span>';
   $("#st-tries").textContent = s.tries;
   $("#st-replies").textContent = s.replies;
   $("#st-calls").textContent = s.calls;
 
+  /* une tuile par entreprise ciblée — aucune tuile rouge : un silence n'est pas un échec */
   var sheet = $("#sheet"); sheet.innerHTML = "";
-  var cs = state.contacts.slice().sort(function(a,b){ return (a.sentAt||9e15)-(b.sentAt||9e15); });
-  var n = Math.max(state.goal, cs.length);
+  var teinte = function(e){
+    if(e.etat==="conversation") return "replied";
+    if(e.etat==="sommeil" || e.etat==="reveil") return "covered";
+    if(e.entamee) return "sent";
+    return "";
+  };
+  var rang = {replied:0, sent:1, covered:2, "":3};
+  var es = entreprises().slice().sort(function(a,b){ return rang[teinte(a)]-rang[teinte(b)]; });
+  var n = Math.max(state.goal, es.length);
   for(var i=0;i<n;i++){
     var t = el("div","tile");
-    if(cs[i]) t.classList.add(view(cs[i]).k==="due" ? "sent" : view(cs[i]).k);
+    if(es[i] && teinte(es[i])) t.classList.add(teinte(es[i]));
     sheet.appendChild(t);
   }
 
   var r = $("#reality");
   if(s.tries===0){
-    r.innerHTML = "Rien d'envoyé pour l'instant. Le premier message est le plus cher — après, c'est de la mécanique.";
-  } else if(s.sent<5){
-    r.innerHTML = "<b>"+s.sent+" personne"+(s.sent>1?"s":"")+" contactée"+(s.sent>1?"s":"")+".</b> Trop tôt pour juger quoi que ce soit : le rythme normal en contact à froid, c'est <b>1 réponse pour 4 ou 5 messages</b>.";
+    r.innerHTML = s.boites
+      ? "Rien d'envoyé pour l'instant. Le premier message est le plus cher — après, c'est de la mécanique."
+      : "Commence par cibler des entreprises. Les personnes viendront après, une à la fois.";
+  } else if(s.entamees<5){
+    r.innerHTML = "<b>"+s.entamees+" entreprise"+(s.entamees>1?"s":"")+" entamée"+(s.entamees>1?"s":"")+".</b> Trop tôt pour juger quoi que ce soit : en contact à froid, le rythme normal c'est <b>1 réponse pour 4 ou 5 messages</b>.";
   } else if(s.replies===0){
-    r.innerHTML = "<b>"+s.sent+" contactés, 0 réponse.</b> Il en faut souvent 8 à 10 avant la première. Ce chiffre parle du volume envoyé, pas de toi.";
+    r.innerHTML = "<b>"+s.entamees+" entreprises entamées, 0 conversation.</b> Il faut souvent 8 à 10 messages avant la première. Ce chiffre parle du volume envoyé, pas de toi.";
   } else {
-    var ratio = Math.round(s.sent/s.replies*10)/10;
-    var norm = s.replies/s.sent >= 0.2 ? "au-dessus du rythme normal" : "dans la norme";
-    r.innerHTML = "<b>"+s.sent+" contactés, "+s.replies+" réponse"+(s.replies>1?"s":"")+"</b> — 1 sur "+String(ratio).replace(".",",")+". Tu es "+norm+" (1 pour 4 ou 5).";
+    var ratio = Math.round(s.entamees/s.replies*10)/10;
+    var norm = s.replies/s.entamees >= 0.2 ? "au-dessus du rythme normal" : "dans la norme";
+    r.innerHTML = "<b>"+s.entamees+" entreprises entamées, "+s.replies+" conversation"+(s.replies>1?"s":"")+"</b> — 1 sur "+String(ratio).replace(".",",")+". Tu es "+norm+" (1 pour 4 ou 5).";
   }
   if(s.today>0){
     r.innerHTML += " <b>"+s.today+" envoi"+(s.today>1?"s":"")+" aujourd'hui</b> — la série tient.";
@@ -621,16 +875,17 @@ function renderMeter(){
 }
 
 var BADGES = [
-  {e:"📮", t:"Premier envoi",     f:function(s){ return s.tries>=1; }},
-  {e:"🖐", t:"5 contactés",       f:function(s){ return s.sent>=5; }},
-  {e:"🔟", t:"10 contactés",      f:function(s){ return s.sent>=10; }},
-  {e:"📬", t:"20 contactés",      f:function(s){ return s.sent>=20; }},
-  {e:"🏁", t:"Objectif atteint",  f:function(s){ return s.sent>=state.goal; }},
-  {e:"🔥", t:"7 jours d'affilée", f:function(s){ return bestStreak()>=7; }},
-  {e:"↩️", t:"3 relances",        f:function(s){ return s.follows>=3; }},
+  {e:"📮", t:"Premier envoi",       f:function(s){ return s.tries>=1; }},
+  {e:"🖐", t:"5 entreprises",       f:function(s){ return s.entamees>=5; }},
+  {e:"🔟", t:"10 entreprises",      f:function(s){ return s.entamees>=10; }},
+  {e:"📬", t:"20 entreprises",      f:function(s){ return s.entamees>=20; }},
+  {e:"🏁", t:"Objectif atteint",    f:function(s){ return s.entamees>=state.goal; }},
+  {e:"🔥", t:"7 jours d'affilée",   f:function(s){ return bestStreak()>=7; }},
+  {e:"↩️", t:"3 relances",          f:function(s){ return s.follows>=3; }},
+  {e:"🎯", t:"Séquence complète",   f:function(s){ return s.complets>=1; }},
   {e:"🛡", t:"10 silences encaissés", f:function(s){ return s.covered>=10; }},
-  {e:"💬", t:"Première réponse",  f:function(s){ return s.replies>=1; }},
-  {e:"☎️", t:"Premier call",      f:function(s){ return s.calls>=1; }}
+  {e:"💬", t:"Première conversation", f:function(s){ return s.replies>=1; }},
+  {e:"☎️", t:"Premier call",        f:function(s){ return s.calls>=1; }}
 ];
 function renderBadges(){
   var s = stats(), box = $("#badges"); box.innerHTML = "";
@@ -644,59 +899,96 @@ function renderBadges(){
 }
 
 /* ============ rendu : mission du jour ============ */
-function seededOrder(list){
-  var seed = 0, k = todayKey();
-  for(var i=0;i<k.length;i++) seed = (seed*31 + k.charCodeAt(i)) % 100000;
-  return list.map(function(c,i){ return {c:c, r:(seed*(i+7)*9301+49297)%233280}; })
-             .sort(function(a,b){ return a.r-b.r; })
-             .map(function(o){ return o.c; });
+function retardTxt(du){
+  if(!du) return "";
+  var d = daysSince(du);
+  if(d===null || d<=0) return "";
+  if(d===1) return " · un jour de retard";
+  return " · "+d+" jours de retard";
+}
+function lienRecherche(nom){
+  return "https://www.linkedin.com/search/results/people/?keywords="+encodeURIComponent(nom);
+}
+function carte(m){
+  var card = el("div","env");
+  var tard = m.type==="contact" && m.a.dat && !!m.du && daysSince(m.du) >= 1;
+  if(tard) card.classList.add("due");
+
+  var quoi, qui, sous, dit, boutons = [];
+  if(m.type==="contact"){
+    quoi = m.a.quoi + (m.a.dat ? retardTxt(m.du) : "");
+    qui  = fullName(m.c);
+    sous = [m.e.solo ? "" : m.e.nom, TIER_NOM[m.c.tier||"p1"], m.c.role].filter(Boolean).join(" · ");
+    dit  = m.a.consigne;
+    m.a.boutons.forEach(function(b,i){
+      boutons.push({t:b.t, ghost:i>0, go:function(){ faire(m.c.id, b.a); }});
+    });
+    boutons.push({t:"Ouvrir", ghost:true, go:function(){ openContact(m.c.id); }});
+  } else if(m.type==="sourcing"){
+    quoi = "Contact suivant" + retardTxt(m.du);
+    qui  = m.e.nom;
+    sous = "il te manque un " + TIER_NOM[m.tier];
+    dit  = "Cherche " + TIER_QUI[m.tier] + ".";
+    boutons.push({t:"Ajouter cette personne", go:function(){ openEdit(null, {company:m.e.nom, tier:m.tier}); }});
+    boutons.push({t:"Chercher", ghost:true, go:function(){ window.open(lienRecherche(m.e.nom), "_blank", "noopener"); }});
+    boutons.push({t:"Laisser dormir", ghost:true, go:function(){ dormir(m.e.cle, m.e.nom); }});
+  } else {
+    quoi = "Réveil possible";
+    qui  = m.e.nom;
+    sous = "en sommeil depuis " + Math.round(daysSince(m.e.dort)/7) + " semaines";
+    dit  = "N'y retourne qu'avec un vrai prétexte : une offre publiée, une actu de la boîte, un changement de poste, un contenu que la personne vient de publier.";
+    boutons.push({t:"Ouvrir l'entreprise", go:function(){ openBoite(m.e.cle); }});
+    boutons.push({t:"Laisser dormir", ghost:true, go:function(){ dormir(m.e.cle, m.e.nom); }});
+  }
+
+  card.appendChild(el("div","why"+(tard?" due":""), quoi));
+  var head = el("div");
+  head.appendChild(el("div","who", qui));
+  if(sous) head.appendChild(el("div","meta", sous));
+  card.appendChild(head);
+  card.appendChild(el("div","doing", dit));
+  var acts = el("div","row-actions");
+  boutons.forEach(function(b){
+    var n = el("button","btn"+(b.ghost?" ghost":""), b.t);
+    n.onclick = b.go;
+    acts.appendChild(n);
+  });
+  card.appendChild(acts);
+  return card;
 }
 function renderMission(){
   var box = $("#mission"); box.innerHTML = "";
   $("#today-date").textContent = new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
 
-  var due = state.contacts.filter(function(c){ return view(c).k==="due"; })
-                          .sort(function(a,b){ return a.sentAt-b.sentAt; });
-  var todo = seededOrder(state.contacts.filter(function(c){ return view(c).k==="todo"; }));
-  var picks = due.concat(todo).slice(0,3);
-
-  if(!state.contacts.length){
+  var es = entreprises();
+  if(!es.length){
     var e0 = el("div","empty");
     e0.appendChild(el("b",null,"La planche est vide"));
-    e0.appendChild(el("div",null,"Ajoute une première personne, ou importe ton export Notion."));
+    e0.appendChild(el("div",null,"Cible une première entreprise — l'app te dira quoi faire ensuite, étape par étape."));
     box.appendChild(e0); return;
   }
-  if(!picks.length){
+
+  var ms = missions();
+  if(!ms.length){
     var s = stats();
     var e1 = el("div","empty");
-    e1.appendChild(el("b",null, s.today>0 ? "Journée faite." : "Rien à envoyer aujourd'hui."));
-    e1.appendChild(el("div",null, s.today>0
-      ? "Tu as envoyé "+s.today+" message"+(s.today>1?"s":"")+" aujourd'hui. Les relances reviendront toutes seules."
-      : "Tout le monde est traité ou en attente. Ajoute des noms pour relancer la machine."));
+    if(s.today>0){
+      e1.appendChild(el("b",null,"Journée faite."));
+      e1.appendChild(el("div",null,"Tu as envoyé "+s.today+" message"+(s.today>1?"s":"")+" aujourd'hui. Les relances reviendront toutes seules le jour venu."));
+    } else if(s.dodo && s.dodo===es.length){
+      e1.appendChild(el("b",null,"Tout dort."));
+      e1.appendChild(el("div",null,"Chaque entreprise est en sommeil. Cible-en de nouvelles, ou attends un prétexte pour réveiller les anciennes."));
+    } else {
+      e1.appendChild(el("b",null,"Rien à envoyer aujourd'hui."));
+      e1.appendChild(el("div",null,"Tout le monde est en attente. Les relances tombent à J+6, la dernière tentative à J+9."));
+    }
     box.appendChild(e1); return;
   }
 
-  picks.forEach(function(c){
-    var v = view(c);
-    var card = el("div","env"+(v.k==="due"?" due":""));
-    var why = el("div","why"+(v.k==="due"?" due":""), v.k==="due"
-      ? "Relance due — envoyé "+humanAge(c.sentAt)
-      : "Premier message");
-    var head = el("div");
-    head.appendChild(el("div","who", fullName(c)));
-    head.appendChild(el("div","meta", subtitle(c)));
-    var acts = el("div","row-actions");
-    var b1 = el("button","btn wide","Ouvrir");
-    b1.onclick = function(){ openContact(c.id); };
-    var b2 = el("button","btn ghost","Déjà fait");
-    b2.onclick = function(){ advance(c.id); };
-    acts.appendChild(b1); acts.appendChild(b2);
-    card.appendChild(why); card.appendChild(head); card.appendChild(acts);
-    box.appendChild(card);
-  });
+  ms.slice(0,3).forEach(function(m){ box.appendChild(carte(m)); });
 }
 
-/* ============ rendu : liste ============ */
+/* ============ rendu : la planche ============ */
 function fullName(c){ return (c.first+" "+(c.last||"")).trim(); }
 function subtitle(c){
   var p = [];
@@ -704,88 +996,162 @@ function subtitle(c){
   if(c.company) p.push(c.company);
   return p.join(" · ");
 }
-function matches(c){
-  var k = view(c).k;
+function matches(e){
   if(filter==="all") return true;
-  if(filter==="todo") return k==="todo";
-  if(filter==="waiting") return k==="sent" || k==="due" || k==="followed";
-  if(filter==="replied") return k==="replied" || k==="call";
-  if(filter==="covered") return k==="covered";
-  return true;
+  if(filter==="sommeil") return e.etat==="sommeil" || e.etat==="reveil";
+  return e.etat===filter;
 }
 function renderList(){
   var box = $("#list"); box.innerHTML = "";
-  var rows = state.contacts.filter(matches);
-  var order = {due:0, todo:1, sent:2, followed:3, replied:4, call:5, covered:6};
+  var toutes = entreprises();
+  var rows = toutes.filter(matches);
+  var rang = {reveil:0, cours:1, sourcing:2, conversation:3, sommeil:4};
   rows.sort(function(a,b){
-    var d = order[view(a).k] - order[view(b).k];
-    return d !== 0 ? d : fullName(a).localeCompare(fullName(b),"fr");
+    var d = rang[a.etat]-rang[b.etat];
+    return d !== 0 ? d : a.nom.localeCompare(b.nom,"fr");
   });
-  $("#list-count").textContent = state.contacts.length ? rows.length+" / "+state.contacts.length : "";
+  $("#list-count").textContent = toutes.length ? rows.length+" / "+toutes.length : "";
 
   if(!rows.length){
     var e = el("div","empty");
-    e.appendChild(el("b",null, state.contacts.length ? "Rien dans ce filtre" : "Aucune personne"));
-    e.appendChild(el("div",null, state.contacts.length ? "Change de filtre pour voir le reste." : "Le bouton + en bas ouvre la fiche d'ajout."));
+    e.appendChild(el("b",null, toutes.length ? "Rien dans ce filtre" : "Aucune entreprise"));
+    e.appendChild(el("div",null, toutes.length ? "Change de filtre pour voir le reste." : "Le bouton + Entreprise en bas ouvre la fiche."));
     box.appendChild(e); return;
   }
 
-  rows.forEach(function(c){
-    var v = view(c);
+  rows.forEach(function(e){
+    var etat = ETAT_BOITE[e.etat];
     var item = el("div","item");
     var main = el("button","item-main");
-    main.appendChild(el("div","item-name", fullName(c)));
-    main.appendChild(el("div","item-sub", subtitle(c)));
-    var pill = el("span","pill "+v.k, v.label + (c.sentAt && v.k!=="todo" ? " · "+humanAge(v.k==="followed"?c.followedAt:c.sentAt) : ""));
+    main.appendChild(el("div","item-name", e.nom));
+
+    var sous;
+    if(e.etat==="sommeil" || e.etat==="reveil"){
+      var dep = e.dort || e.finLe || e.debut;
+      sous = dep ? "silence depuis "+Math.max(1,Math.round(daysSince(dep)/7))+" semaines" : "en sommeil";
+    }
+    else if(e.actif) sous = (e.actif.tier||"p1").toUpperCase()+" "+fullName(e.actif)+" — "+view(e.actif).label.toLowerCase();
+    else if(e.manque) sous = "il manque un "+TIER_NOM[e.manque];
+    else sous = "les trois contacts sont passés";
+    main.appendChild(el("div","item-sub", sous));
+
+    var pill = el("span","pill "+etat.pill, etat.label);
     main.appendChild(pill);
-    main.onclick = function(){ openContact(c.id); };
+
+    var slots = el("div","slots");
+    TIERS.forEach(function(t){
+      var c = e[t];
+      var cl = "slot";
+      if(c) cl += enConversation(c) ? " win" : (fini(c) ? " done" : (reached(c) ? " on" : " set"));
+      var d = el("i",cl);
+      d.title = TIER_NOM[t] + (c ? " · "+fullName(c) : " · à trouver");
+      slots.appendChild(d);
+    });
+    main.appendChild(slots);
+    main.onclick = function(){ openBoite(e.cle); };
+
     var next = el("button","item-next","›");
-    next.title = "Avancer d'un cran";
-    next.setAttribute("aria-label","Avancer "+fullName(c));
-    if(c.status==="call") next.disabled = true;
-    next.onclick = function(){ advance(c.id); };
+    next.setAttribute("aria-label","Ouvrir "+e.nom);
+    next.onclick = function(){ openBoite(e.cle); };
     item.appendChild(main); item.appendChild(next);
     box.appendChild(item);
   });
 }
 
-function render(){ renderMeter(); renderBadges(); renderMission(); renderList(); }
+function render(){ renderMeter(); renderBadges(); renderMission(); renderList(); if(courante && $("#dlg-company").open) fillBoite(); }
 
 /* ============ mutations ============ */
 function byId(id){
   for(var i=0;i<state.contacts.length;i++) if(state.contacts[i].id===id) return state.contacts[i];
   return null;
 }
-function setStatus(c, s){
+/* un acte = un geste sorti de chez toi. On ne l'efface jamais : le compteur ne redescend pas. */
+function noter(c, ts){
+  if(!Array.isArray(c.actes)) c.actes = [];
+  c.actes.push(ts);
+}
+function agir(c, action){
   var now = Date.now();
   c.updatedAt = now;
-  c.status = s;
   c.closed = false;
-  if(s==="todo"){ c.sentAt=0; c.followedAt=0; c.repliedAt=0; c.callAt=0; }
-  if(s==="sent"){ if(!c.sentAt) c.sentAt=now; c.followedAt=0; c.repliedAt=0; c.callAt=0; }
-  if(s==="followed"){ if(!c.sentAt) c.sentAt=now; if(!c.followedAt) c.followedAt=now; c.repliedAt=0; c.callAt=0; }
-  if(s==="replied"){ if(!c.sentAt) c.sentAt=now; if(!c.repliedAt) c.repliedAt=now; c.callAt=0; }
-  if(s==="call"){ if(!c.sentAt) c.sentAt=now; if(!c.repliedAt) c.repliedAt=now; if(!c.callAt) c.callAt=now; }
+  if(action!=="stop") c.stoppedAt = 0;
+
+  if(action==="invited"){
+    c.status = "invited";
+    if(!c.invitedAt){ c.invitedAt = now; noter(c, now); }
+  } else if(action==="sent" || action==="sent-li" || action==="sent-mail"){
+    c.status = "sent";
+    if(action==="sent-li")   c.channel = "li";
+    if(action==="sent-mail") c.channel = "mail";
+    if(!c.sentAt){ c.sentAt = now; noter(c, now); }
+  } else if(action==="followed"){
+    c.status = "followed";
+    if(!c.sentAt) c.sentAt = now;
+    if(!c.followedAt){ c.followedAt = now; noter(c, now); }
+  } else if(action==="last"){
+    c.status = "followed";
+    if(!c.sentAt) c.sentAt = now;
+    if(!c.followedAt) c.followedAt = now;
+    if(!c.lastAt){ c.lastAt = now; noter(c, now); }
+  } else if(action==="stop"){
+    c.stoppedAt = now;
+  } else if(action==="replied"){
+    c.status = "replied";
+    if(!c.sentAt) c.sentAt = now;
+    if(!c.repliedAt) c.repliedAt = now;
+  } else if(action==="call"){
+    c.status = "call";
+    if(!c.sentAt) c.sentAt = now;
+    if(!c.repliedAt) c.repliedAt = now;
+    if(!c.callAt) c.callAt = now;
+  } else if(action==="todo"){
+    c.status = "todo";
+    c.invitedAt=0; c.sentAt=0; c.followedAt=0; c.lastAt=0; c.repliedAt=0; c.callAt=0; c.stoppedAt=0; c.channel="";
+  }
 }
 var CHEER = {
-  sent:["Envoyé. C'est ça le score.","Un de plus sur la planche.","Parti. La suite ne t'appartient pas."],
+  invited: ["Invitation partie. Le premier geste est fait.","Envoyée. On reparle d'elle dans deux jours."],
+  sent:    ["Envoyé. C'est ça le score.","Un de plus sur la planche.","Parti. La suite ne t'appartient pas."],
   followed:["Relancé. C'est là que la plupart abandonnent.","Deuxième passage — c'est souvent celui qui marche."],
-  replied:["Réponse. Bien joué.","Ça a mordu."],
-  call:["Un call décroché. C'était le but.","Call posé — c'est exactement pour ça que tu envoies."],
-  todo:["Remis à zéro."]
+  last:    ["Troisième et dernière. Tu as fait le job.","Dernier passage — terrain couvert."],
+  stop:    ["Séquence close. On passe au suivant.","Terrain couvert — ça compte quand même."],
+  replied: ["Réponse. Bien joué.","Ça a mordu."],
+  call:    ["Un call décroché. C'était le but.","Call posé — c'est exactement pour ça que tu envoies."],
+  todo:    ["Remis à zéro."]
 };
-function advance(id){
+function faire(id, action){
   var c = byId(id); if(!c) return;
-  var order = ["todo","sent","followed","replied","call"];
-  var i = order.indexOf(c.status);
-  if(i>=order.length-1) return;
-  var next = order[i+1];
-  setStatus(c, next);
-  save();
-  render();
-  if(current===id) fillContact();
-  var msgs = CHEER[next] || [""];
+  agir(c, action);
+  save(); render();
+  if(current===id && $("#dlg-contact").open) fillContact();
+  var clef = action.indexOf("sent")===0 ? "sent" : action;
+  var msgs = CHEER[clef] || [""];
   toast(msgs[Math.floor(Math.random()*msgs.length)]);
+}
+function setStatus(c, k){ agir(c, k); }
+/* ============ entreprises : sommeil, réveil, création ============ */
+function assurerBoite(nom){
+  var cle = cleBoite(nom);
+  if(!cle) return null;
+  var b = boiteDe(cle);
+  if(!b){
+    b = {cle:cle, nom:String(nom).trim(), snoozedAt:0, createdAt:Date.now(), updatedAt:Date.now()};
+    state.boites.push(b);
+  }
+  return b;
+}
+function dormir(cle, nom){
+  var b = boiteDe(cle) || assurerBoite(nom);
+  if(!b){ toast("Cette personne n'a pas d'entreprise — ajoute-la dans sa fiche."); return; }
+  b.snoozedAt = Date.now(); b.updatedAt = Date.now();
+  save(); render();
+  toast("En sommeil. On y revient dans un mois, avec un prétexte.");
+}
+function reveiller(cle){
+  var b = boiteDe(cle); if(!b) return;
+  b.snoozedAt = 0; b.updatedAt = Date.now();
+  save(); render();
+  toast("Réveillée.");
 }
 
 /* ---- ce qu'on colle depuis un téléphone est rarement propre ---- */
@@ -850,6 +1216,100 @@ function waNumber(raw){
   return n;
 }
 
+/* ============ fiche entreprise ============ */
+var dlgK = $("#dlg-company");
+function openBoite(cle){
+  courante = cle;
+  if(!fillBoite()) return;
+  dlgK.showModal();
+}
+function boiteCourante(){
+  var l = entreprises().filter(function(x){ return x.cle===courante; });
+  return l[0] || null;
+}
+function fillBoite(){
+  var e = boiteCourante();
+  if(!e){ if(dlgK.open) dlgK.close(); return false; }
+  $("#k-name").textContent = e.nom;
+
+  var etat = ETAT_BOITE[e.etat], meta = [etat.label];
+  if(e.debut) meta.push("premier envoi "+humanAge(e.debut));
+  $("#k-meta").textContent = meta.join(" · ");
+
+  var dit;
+  if(e.etat==="conversation")   dit = "Conversation en route avec "+fullName(e.conv)+". Les autres contacts restent en pause tant qu'elle est vivante.";
+  else if(e.etat==="cours")     dit = "Tu ne contactes qu'une personne à la fois : "+fullName(e.actif)+". Les autres attendent leur tour.";
+  else if(e.etat==="sourcing")  dit = "Il te manque un "+TIER_NOM[e.manque]+" — "+TIER_QUI[e.manque]+".";
+  else if(e.etat==="reveil")    dit = "En sommeil depuis "+Math.round(daysSince(e.dort)/7)+" semaines. Tu peux y retourner, mais seulement avec un vrai prétexte.";
+  else                          dit = "En sommeil. On y revient dans quelques semaines, avec une offre, une actu, un changement de poste.";
+  $("#k-consigne").textContent = dit;
+
+  var box = $("#k-slots"); box.innerHTML = "";
+  TIERS.forEach(function(t){
+    var c = e[t];
+    var row = el("button","slotrow"+(c?"":" vide"));
+    row.type = "button";
+    row.appendChild(el("span","rk", t.toUpperCase()));
+    var bd = el("div","bd");
+    if(c){
+      bd.appendChild(el("b",null, fullName(c)));
+      var v = view(c);
+      bd.appendChild(el("span",null, [v.label, c.role].filter(Boolean).join(" · ")));
+      row.onclick = function(){ openContact(c.id); };
+    } else {
+      bd.appendChild(el("b",null, "Ajouter un "+TIER_NOM[t]));
+      bd.appendChild(el("span",null, TIER_QUI[t]));
+      row.onclick = function(){ openEdit(null, {company:e.solo?"":e.nom, tier:t}); };
+    }
+    row.appendChild(bd);
+    row.appendChild(el("span","go", c ? "›" : "+"));
+    box.appendChild(row);
+  });
+  e.gens.forEach(function(c){                       // les doublons de rang, s'il y en a
+    if(e[c.tier||"p1"]===c) return;
+    var row = el("button","slotrow"); row.type="button";
+    row.appendChild(el("span","rk", (c.tier||"p1").toUpperCase()));
+    var bd = el("div","bd");
+    bd.appendChild(el("b",null, fullName(c)));
+    bd.appendChild(el("span",null, view(c).label));
+    row.appendChild(bd); row.appendChild(el("span","go","›"));
+    row.onclick = function(){ openContact(c.id); };
+    box.appendChild(row);
+  });
+
+  $("#k-sleep").textContent = e.dort ? "Réveiller" : "Mettre en sommeil";
+  $("#k-del").hidden = !(e.boite && !e.gens.length);
+  return true;
+}
+$("#k-search").addEventListener("click", function(){
+  var e = boiteCourante(); if(!e) return;
+  window.open(lienRecherche(e.nom), "_blank", "noopener");
+});
+$("#k-sleep").addEventListener("click", function(){
+  var e = boiteCourante(); if(!e) return;
+  if(e.dort) reveiller(e.cle); else dormir(e.cle, e.nom);
+  fillBoite();
+});
+$("#k-del").addEventListener("click", function(){
+  var e = boiteCourante(); if(!e || !e.boite) return;
+  if(!window.confirm("Retirer "+e.nom+" de la planche ?")) return;
+  state.boites = state.boites.filter(function(b){ return b.cle!==e.cle; });
+  state.boitesSupp.push({cle:e.cle, at:Date.now()});
+  save(); render(); dlgK.close(); toast("Retirée.");
+});
+
+/* nouvelle entreprise */
+var dlgB = $("#dlg-boite");
+$("#btn-boite").addEventListener("click", function(){ $("#b-nom").value=""; dlgB.showModal(); setTimeout(function(){ $("#b-nom").focus(); },50); });
+$("#form-boite").addEventListener("submit", function(e){
+  var nom = $("#b-nom").value.trim();
+  if(!nom){ e.preventDefault(); toast("Il me faut un nom."); return; }
+  if(boiteDe(cleBoite(nom))){ toast(nom+" est déjà sur la planche."); return; }
+  assurerBoite(nom);
+  save(); render();
+  toast(nom+" ciblée. Trouve-lui un booster.");
+});
+
 /* ============ fiche contact ============ */
 var dlgC = $("#dlg-contact");
 
@@ -868,7 +1328,7 @@ function fillContact(){
   var t = lastTouch(c);
   $("#c-name").textContent = fullName(c);
 
-  var meta = [];
+  var meta = [TIER_NOM[c.tier||"p1"]];
   if(subtitle(c)) meta.push(subtitle(c));
   if(t) meta.push("dernier contact "+humanAge(t));   // le statut est déjà lisible en dessous
   $("#c-meta").textContent = meta.join(" · ");
@@ -921,20 +1381,35 @@ $("#c-edit").addEventListener("click", function(){ openEdit(current); });
 
 /* ============ ajout / édition ============ */
 var dlgE = $("#dlg-edit");
-function openEdit(id){
+function openEdit(id, pre){
+  pre = pre || {};
   editing = id||null;
   var c = id ? byId(id) : null;
   $("#e-title").textContent = c ? "Modifier la fiche" : "Nouvelle personne";
   $("#e-save").textContent = c ? "Enregistrer" : "Ajouter";
   $("#e-first").value = c?c.first:"";
   $("#e-last").value = c?(c.last||""):"";
-  $("#e-company").value = c?(c.company||""):"";
+  $("#e-company").value = c?(c.company||""):(pre.company||"");
   $("#e-role").value = c?(c.role||""):"";
   $("#e-linkedin").value = c?(c.linkedin||""):"";
   $("#e-email").value = c?(c.email||""):"";
   $("#e-phone").value = c?(c.phone||""):"";
+  setTier(c ? (c.tier||"p1") : (pre.tier||"p1"));
+  if(dlgK.open && !c) dlgK.close();
   dlgE.showModal();
 }
+var tierEdit = "p1";
+function setTier(t){
+  tierEdit = TIERS.indexOf(t)>=0 ? t : "p1";
+  Array.prototype.forEach.call($("#e-tier").children, function(b){
+    b.setAttribute("aria-pressed", String(b.dataset.t===tierEdit));
+  });
+  $("#e-tier-hint").textContent = "Tu cherches "+TIER_QUI[tierEdit]+".";
+}
+$("#e-tier").addEventListener("click", function(e){
+  var b = e.target.closest("[data-t]"); if(!b) return;
+  setTier(b.dataset.t);
+});
 $("#e-paste").addEventListener("click", function(){
   if(!navigator.clipboard || !navigator.clipboard.readText){
     toast("Ce navigateur ne me laisse pas lire le presse-papier — colle dans le champ à la main.");
@@ -973,7 +1448,7 @@ $("#form-edit").addEventListener("submit", function(e){
     first:first, last:last,
     company:$("#e-company").value.trim(), role:$("#e-role").value.trim(),
     linkedin:lien, email:$("#e-email").value.trim(),
-    phone:$("#e-phone").value.trim()
+    phone:$("#e-phone").value.trim(), tier:tierEdit
   };
   if(editing){
     var c = byId(editing);
@@ -983,7 +1458,8 @@ $("#form-edit").addEventListener("submit", function(e){
     toast("Fiche mise à jour.");
   } else {
     state.contacts.push(newContact(data));
-    toast("Ajouté à la planche.");
+    if(data.company) assurerBoite(data.company);
+    toast(TIER_NOM[data.tier]+" ajouté"+(data.company?" chez "+data.company:"")+".");
   }
   editing = null; save(); render();
 });
@@ -992,7 +1468,9 @@ function newContact(d){
     id: "c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     first:d.first||"", last:d.last||"", company:d.company||"", role:d.role||"",
     linkedin:d.linkedin||"", email:d.email||"", phone:d.phone||"", hook:d.hook||"", note:"",
-    status:"todo", sentAt:0, followedAt:0, repliedAt:0, callAt:0, closed:false,
+    tier: TIERS.indexOf(d.tier)>=0 ? d.tier : "p1",
+    status:"todo", invitedAt:0, sentAt:0, followedAt:0, lastAt:0, repliedAt:0, callAt:0,
+    stoppedAt:0, closed:false, actes:[],
     channel:"", kind:"", messages:[],
     createdAt: Date.now(), updatedAt: Date.now()
   };
@@ -1199,7 +1677,7 @@ $("#i-go").addEventListener("click", function(){
 
 /* ============ divers UI ============ */
 $("#btn-add").addEventListener("click", function(){ openEdit(null); });
-$("#btn-import").addEventListener("click", function(){ dlgI.showModal(); });
+$("#s-import").addEventListener("click", function(){ dlgS.close(); dlgI.showModal(); });
 $("#filters").addEventListener("click", function(e){
   var b = e.target.closest("[data-f]"); if(!b) return;
   filter = b.dataset.f;
@@ -1357,7 +1835,9 @@ function mergeState(a, b){
     sync: (a && a.sync) || (b && b.sync) || {token:"",gistId:""},   // jamais fusionnée : locale
     updatedAt: Math.max(a.updatedAt||0, b.updatedAt||0),
     contacts: [],
-    deleted: []
+    boites: [],
+    deleted: [],
+    boitesSupp: []
   };
 
   // les suppressions, avec la date à laquelle elles ont eu lieu
@@ -1388,6 +1868,30 @@ function mergeState(a, b){
   Object.keys(tombes).forEach(function(id){
     if(tombes[id] > limite) out.deleted.push({id:id, at:tombes[id]});
   });
+
+  /* même règle, entreprise par entreprise : la plus récemment touchée gagne */
+  var tombesB = {};
+  [a, b].forEach(function(src){
+    (src.boitesSupp||[]).forEach(function(d){
+      if(!tombesB[d.cle] || d.at > tombesB[d.cle]) tombesB[d.cle] = d.at;
+    });
+  });
+  var par_cle = {};
+  [a, b].forEach(function(src){
+    (src.boites||[]).forEach(function(x){
+      var vu = par_cle[x.cle];
+      if(!vu || (x.updatedAt||0) > (vu.updatedAt||0)) par_cle[x.cle] = x;
+    });
+  });
+  Object.keys(par_cle).forEach(function(cle){
+    var x = par_cle[cle];
+    if(tombesB[cle] && tombesB[cle] >= (x.updatedAt||0)) return;
+    if(tombesB[cle]) delete tombesB[cle];
+    out.boites.push(x);
+  });
+  Object.keys(tombesB).forEach(function(cle){
+    if(tombesB[cle] > limite) out.boitesSupp.push({cle:cle, at:tombesB[cle]});
+  });
   return out;
 }
 
@@ -1399,7 +1903,21 @@ function normalize(s){
   s.goal = s.goal || 30;
   s.sync = s.sync || {token:"", gistId:""};
   if(!Array.isArray(s.deleted)) s.deleted = [];
+  if(!Array.isArray(s.boitesSupp)) s.boitesSupp = [];
+  if(!Array.isArray(s.boites)) s.boites = [];
+  s.boites = s.boites.filter(function(b){ return b && b.nom; }).map(function(b){
+    return {
+      cle: b.cle || cleBoite(b.nom),
+      nom: String(b.nom).trim(),
+      snoozedAt: b.snoozedAt || 0,
+      createdAt: b.createdAt || Date.now(),
+      updatedAt: b.updatedAt || b.createdAt || Date.now()
+    };
+  });
+
+  var sansRang = [];
   s.contacts = s.contacts.map(function(c){
+    var brut = c.tier;
     var n = Object.assign(newContact({}), c);
     if(!Array.isArray(n.messages)) n.messages = [];
     if(!n.updatedAt) n.updatedAt = n.createdAt || Date.now();
@@ -1407,7 +1925,24 @@ function normalize(s){
       n.note = n.note ? n.hook+"\n"+n.note : n.hook;
       n.hook = "";
     }
+    if(!Array.isArray(n.actes)) n.actes = [];
+    if(!n.actes.length){                          // fiches d'avant les actes : on relit les dates
+      [n.invitedAt, n.sentAt, n.followedAt, n.lastAt].forEach(function(t){ if(t) n.actes.push(t); });
+      n.actes.sort(function(a,b){ return a-b; });
+    }
+    if(TIERS.indexOf(brut)<0) sansRang.push(n);
     return n;
+  });
+
+  /* fiches d'avant les rangs : dans chaque entreprise, le plus ancien devient P1, puis P2, puis P3 */
+  var parBoite = {};
+  sansRang.forEach(function(c){
+    var k = cleBoite(c.company); if(!k) return;
+    (parBoite[k] = parBoite[k] || []).push(c);
+  });
+  Object.keys(parBoite).forEach(function(k){
+    parBoite[k].sort(function(a,b){ return (a.createdAt||0)-(b.createdAt||0); })
+      .forEach(function(c,i){ c.tier = TIERS[Math.min(i,2)]; });
   });
   return s;
 }
