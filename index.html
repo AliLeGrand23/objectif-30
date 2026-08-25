@@ -565,7 +565,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260825-1620";
+var APP_VERSION = "20260825-1627";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{}, goal:30, contacts:[], boites:[], deleted:[], boitesSupp:[], sync:{token:"",gistId:""}, updatedAt:0 };
@@ -1128,7 +1128,26 @@ function faire(id, action){
   var msgs = CHEER[clef] || [""];
   toast(msgs[Math.floor(Math.random()*msgs.length)]);
 }
-function setStatus(c, k){ agir(c, k); }
+/* La barre d'étapes de la fiche corrige un état, elle n'envoie rien.
+   Elle doit donc pouvoir revenir en arrière : on efface ce qui vient après
+   l'étape choisie, puis on relit les actes sur les dates qui restent.
+   Le compteur suit la réalité au lieu d'enregistrer chaque clic. */
+var APRES_ETAPE = {
+  todo:     ["invitedAt","sentAt","followedAt","lastAt","repliedAt","callAt"],
+  invited:  ["sentAt","followedAt","lastAt","repliedAt","callAt"],
+  sent:     ["followedAt","lastAt","repliedAt","callAt"],
+  followed: ["repliedAt","callAt"],
+  replied:  ["callAt"],
+  call:     []
+};
+function setStatus(c, k){
+  agir(c, k);
+  (APRES_ETAPE[k]||[]).forEach(function(f){ c[f] = 0; });
+  if(k==="todo" || k==="invited") c.channel = "";
+  c.actes = [];
+  [c.invitedAt, c.sentAt, c.followedAt, c.lastAt].forEach(function(t){ if(t) c.actes.push(t); });
+  c.actes.sort(function(x,y){ return x-y; });
+}
 /* ============ entreprises : sommeil, réveil, création ============ */
 function assurerBoite(nom){
   var cle = cleBoite(nom);
