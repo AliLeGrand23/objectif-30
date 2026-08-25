@@ -565,7 +565,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260825-1627";
+var APP_VERSION = "20260825-1729";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{}, goal:30, contacts:[], boites:[], deleted:[], boitesSupp:[], sync:{token:"",gistId:""}, updatedAt:0 };
@@ -612,15 +612,22 @@ var J_REVEIL = 30;      // 4 à 6 semaines de sommeil avant de retenter
 var J_CONV = 14;        // au-delà, une réponse ne squatte plus la mission du jour
 
 var TIERS = ["p1","p2","p3"];
-var TIER_NOM = {p1:"P1 booster", p2:"P2 décideur", p3:"P3 route alternative"};
+var TIER_NOM = {p1:"P1 senior", p2:"P2 décideur", p3:"P3 RH"};
 var TIER_QUI = {
-  p1:"quelqu'un proche du poste, 1 à 5 ans d'expérience — il répondra plus facilement",
-  p2:"le manager de l'équipe, ton N+1 possible, celui qui peut créer une opportunité",
-  p3:"une équipe voisine, un alumni, un recruteur spécialisé"
+  p1:"quelqu'un d'expérimenté sur le poste, pas forcément décideur — c'est lui qui te dit comment la boîte recrute",
+  p2:"le manager de l'équipe, ton N+1 possible : c'est à lui que part la candidature",
+  p3:"les RH ou le recrutement de la boîte — le filet, si le décideur ne répond pas"
+};
+/* Ce que tu demandes change à chaque rang : on questionne le senior, on postule chez le décideur. */
+var TIER_ASK = {
+  p1:"Tu ne postules pas encore : tu demandes 10-15 minutes de questions sur le métier, et tu annonces que tu comptes candidater.",
+  p2:"C'est ici que tu postules. Candidature spontanée, directement à lui, CV joint.",
+  p3:"Ta candidature, aux RH cette fois. Dis que tu as déjà écrit au manager de l'équipe."
 };
 
 /* ============ lecture du statut d'une personne ============ */
 function view(c){
+  if(c.missed)             return {k:"covered", label:"Mauvaise cible"};
   if(c.status==="call")    return {k:"call",    label:"Call / RDV"};
   if(c.status==="replied") return {k:"replied", label:"Réponse"};
   if(c.stoppedAt || c.closed) return {k:"covered", label:"Terrain couvert"};
@@ -641,7 +648,8 @@ function finLe(c){
   if(c.lastAt) return c.lastAt + J_CLOTURE*DAY;
   return lastTouch(c) || c.createdAt || 0;
 }
-function enConversation(c){ return c.status==="replied" || c.status==="call"; }
+/* une mauvaise cible a répondu, mais ce n'est pas une conversation : l'entreprise doit passer au suivant */
+function enConversation(c){ return !c.missed && (c.status==="replied" || c.status==="call"); }
 function reached(c){ return !!(c.actes && c.actes.length); }
 
 /* ============ ce qu'il y a à faire, personne par personne ============ */
@@ -654,7 +662,7 @@ function prochaineAction(c){
       du: c.repliedAt || 0,
       quoi: "Réponse — enchaîne", dat:false,
       consigne: "Propose un appel de 10-15 minutes. Pas dispo ? deux ou trois questions par écrit, ou un vocal LinkedIn, font très bien l'affaire.",
-      boutons: [{t:"Call posé", a:"call"}]
+      boutons: [{t:"Call posé", a:"call"}, {t:"Pas la bonne personne", a:"miss"}]
     };
   }
   if(k==="todo") return {
@@ -669,7 +677,7 @@ function prochaineAction(c){
     consigne: (c.email
         ? "Si elle a accepté : message LinkedIn maintenant. Sinon : email pro, sans attendre."
         : "Si elle a accepté : message LinkedIn maintenant. Sinon, sans email connu, la piste s'arrête là.")
-      + " Tu ne demandes pas un job : tu demandes 10-15 minutes pour comprendre le métier.",
+      + " " + (TIER_ASK[c.tier||"p1"] || TIER_ASK.p1),
     boutons: c.email
       ? [{t:"Message LinkedIn envoyé", a:"sent-li"}, {t:"Email envoyé", a:"sent-mail"}]
       : [{t:"Message LinkedIn envoyé", a:"sent-li"}, {t:"Pas accepté — arrêter", a:"stop"}]
@@ -682,7 +690,7 @@ function prochaineAction(c){
       : (c.email
           ? "Passe à l'email. Ne répète pas le message LinkedIn : deux lignes qui rappellent la demande suffisent."
           : "Pas d'email connu — relance courte sur LinkedIn, ou va chercher son adresse."),
-    boutons: [{t:"Relance envoyée", a:"followed"}]
+    boutons: [{t:"Relance envoyée", a:"followed"}, {t:"Pas la bonne personne", a:"miss"}]
   };
   if(k==="followed"){
     if(c.lastAt) return null;                          // la séquence se ferme toute seule
@@ -749,7 +757,11 @@ function jauger(e){
   else                  e.etat = "sommeil";
 
   /* quand faut-il aller chercher le contact suivant : un jour après le précédent */
-  e.manqueLe = e.gens.length ? e.finLe + J_SUIVANT*DAY : (e.ref||0);
+  var dernier = null;
+  e.gens.forEach(function(c){ if(fini(c) && finLe(c) === e.finLe) dernier = c; });
+  e.manqueLe = e.gens.length
+    ? e.finLe + (dernier && dernier.missed ? 0 : J_SUIVANT*DAY)
+    : (e.ref||0);
   e.reveilLe = e.dort ? e.dort + J_REVEIL*DAY : 0;
   return e;
 }
@@ -1073,8 +1085,13 @@ function noter(c, ts){
 function agir(c, action){
   var now = Date.now();
   c.updatedAt = now;
+  /* Travailler quelqu'un réveille son entreprise : une boîte qu'on relance
+     n'a rien à faire en sommeil, même si on l'y avait mise faute de mieux. */
+  var b = boiteDe(cleBoite(c.company));
+  if(b && b.snoozedAt){ b.snoozedAt = 0; b.updatedAt = now; }
   c.closed = false;
   if(action!=="stop") c.stoppedAt = 0;
+  if(action!=="miss") c.missed = false;
 
   if(action==="invited"){
     c.status = "invited";
@@ -1093,6 +1110,11 @@ function agir(c, action){
     if(!c.sentAt) c.sentAt = now;
     if(!c.followedAt) c.followedAt = now;
     if(!c.lastAt){ c.lastAt = now; noter(c, now); }
+  } else if(action==="miss"){
+    /* Elle ne gère pas ce sujet : ce n'est pas un refus, c'est un mauvais tir.
+       La fiche se ferme et l'entreprise réclame le rang suivant tout de suite. */
+    c.missed = true;
+    c.stoppedAt = now;
   } else if(action==="stop"){
     c.stoppedAt = now;
   } else if(action==="replied"){
@@ -1115,6 +1137,7 @@ var CHEER = {
   followed:["Relancé. C'est là que la plupart abandonnent.","Deuxième passage — c'est souvent celui qui marche."],
   last:    ["Troisième et dernière. Tu as fait le job.","Dernier passage — terrain couvert."],
   stop:    ["Séquence close. On passe au suivant.","Terrain couvert — ça compte quand même."],
+  miss:    ["Mauvaise cible — c'est une info, pas un échec.","Pas la bonne personne. Le rang suivant t'attend, tout de suite."],
   replied: ["Réponse. Bien joué.","Ça a mordu."],
   call:    ["Un call décroché. C'était le but.","Call posé — c'est exactement pour ça que tu envoies."],
   todo:    ["Remis à zéro."]
@@ -1156,6 +1179,8 @@ function assurerBoite(nom){
   if(!b){
     b = {cle:cle, nom:String(nom).trim(), snoozedAt:0, createdAt:Date.now(), updatedAt:Date.now()};
     state.boites.push(b);
+  } else if(b.snoozedAt){
+    b.snoozedAt = 0; b.updatedAt = Date.now();     // on y remet quelqu'un : elle se réveille
   }
   return b;
 }
@@ -1489,7 +1514,7 @@ function newContact(d){
     linkedin:d.linkedin||"", email:d.email||"", phone:d.phone||"", hook:d.hook||"", note:"",
     tier: TIERS.indexOf(d.tier)>=0 ? d.tier : "p1",
     status:"todo", invitedAt:0, sentAt:0, followedAt:0, lastAt:0, repliedAt:0, callAt:0,
-    stoppedAt:0, closed:false, actes:[],
+    stoppedAt:0, closed:false, missed:false, actes:[],
     channel:"", kind:"", messages:[],
     createdAt: Date.now(), updatedAt: Date.now()
   };
