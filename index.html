@@ -565,7 +565,7 @@ table.preview th{font-family:var(--f-data); font-size:10px; letter-spacing:.1em;
 "use strict";
 
 /* ============ état ============ */
-var APP_VERSION = "20260822-2325";
+var APP_VERSION = "20260825-1620";
 var KEY = "objectif30.v1";
 var DAY = 86400000;
 var state = { v:1, me:{}, goal:30, contacts:[], boites:[], deleted:[], boitesSupp:[], sync:{token:"",gistId:""}, updatedAt:0 };
@@ -1571,6 +1571,7 @@ var FIELDS = [
   {k:"last",     t:"Nom",        re:/^(nom|last ?name|surname|family)/i},
   {k:"company",  t:"Entreprise", re:/(entreprise|soci[ée]t[ée]|company|boite|bo[îi]te|organisation|employer)/i},
   {k:"role",     t:"Poste",      re:/(poste|fonction|r[ôo]le|role|title|job)/i},
+  {k:"tier",     t:"Rang",       re:/^(rang|tier|niveau|priorit)/i},
   {k:"linkedin", t:"LinkedIn",   re:/(linkedin|profil|url|lien)/i},
   {k:"email",    t:"Email",      re:/(e-?mail|mail|courriel)/i},
   {k:"phone",    t:"Téléphone",  re:/(t[ée]l|phone|portable|mobile|whatsapp|num[ée]ro)/i}
@@ -1664,6 +1665,8 @@ $("#i-go").addEventListener("click", function(){
     FIELDS.forEach(function(f){ var i=pending.map[f.k]; d[f.k] = i>=0 ? (row[i]||"").trim() : ""; });
     if(!d.first && !d.last) return;
     if(!d.last && d.first.indexOf(" ")>0){ var p=d.first.split(" "); d.first=p.shift(); d.last=p.join(" "); }
+    d.tier = (String(d.tier).match(/[123]/)||[])[0];            // « P2 », « p2 décideur », « 2 » : même chose
+    d.tier = d.tier ? "p"+d.tier : "";
     var c = newContact(d);
     var k = keyOf(c);
     if(seen[k]){ dupes++; return; }

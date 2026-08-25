@@ -1,0 +1,3 @@
+# les contacts sont des données perso : le site est public, ils restent en local
+*.csv
+.claude/
